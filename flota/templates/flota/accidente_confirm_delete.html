@@ -1,0 +1,11 @@
+{% extends "flota/base.html" %}
+
+{% block content %}
+<h1>Eliminar accidente</h1>
+<p>Estas seguro de eliminar este accidente?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Si, eliminar</button>
+    <a href="{% url 'accidente_list' %}">Cancelar</a>
+</form>
+{% endblock %}

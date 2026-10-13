@@ -1,0 +1,17 @@
+{% extends "socios/base.html" %}
+
+{% block content %}
+<h1>Documentos</h1>
+<a href="{% url 'documento_create' %}">Nuevo</a>
+<ul>
+{% for d in object_list %}
+    <li>
+        {{ d.nombreDocumento }} - {{ d.numeroDocumento }} (vence {{ d.fechaVencimiento }})
+        [<a href="{% url 'documento_update' d.pk %}">editar</a>]
+        [<a href="{% url 'documento_delete' d.pk %}">eliminar</a>]
+    </li>
+{% empty %}
+    <li>Sin documentos.</li>
+{% endfor %}
+</ul>
+{% endblock %}

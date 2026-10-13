@@ -1,0 +1,17 @@
+{% extends "socios/base.html" %}
+
+{% block content %}
+<h1>Motociclistas</h1>
+<a href="{% url 'motociclista_create' %}">Nuevo</a>
+<ul>
+{% for m in object_list %}
+    <li>
+        {{ m.nombre }} {{ m.apellido }} - {{ m.correo }}
+        [<a href="{% url 'motociclista_update' m.pk %}">editar</a>]
+        [<a href="{% url 'motociclista_delete' m.pk %}">eliminar</a>]
+    </li>
+{% empty %}
+    <li>Sin motociclistas registrados.</li>
+{% endfor %}
+</ul>
+{% endblock %}

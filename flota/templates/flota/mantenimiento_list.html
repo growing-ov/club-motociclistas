@@ -1,0 +1,17 @@
+{% extends "flota/base.html" %}
+
+{% block content %}
+<h1>Mantenimientos</h1>
+<a href="{% url 'mantenimiento_create' %}">Nuevo</a>
+<ul>
+{% for m in object_list %}
+    <li>
+        {{ m.tipo }} - moto {{ m.idMoto }} - {{ m.fecha|date:"Y-m-d" }} - ${{ m.costo }}
+        [<a href="{% url 'mantenimiento_update' m.pk %}">editar</a>]
+        [<a href="{% url 'mantenimiento_delete' m.pk %}">eliminar</a>]
+    </li>
+{% empty %}
+    <li>Sin mantenimientos.</li>
+{% endfor %}
+</ul>
+{% endblock %}

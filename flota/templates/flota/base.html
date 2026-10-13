@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><title>Flota</title></head>
+<body>
+<nav>
+    <a href="/socios/motociclistas/">Motociclistas</a> |
+    <a href="{% url 'moto_list' %}">Motos</a> |
+    <a href="{% url 'mantenimiento_list' %}">Mantenimientos</a> |
+    <a href="{% url 'accidente_list' %}">Accidentes</a> |
+    <a href="/eventos/rodadas/">Rodadas</a>
+</nav>
+<hr>
+{% if messages %}
+    {% for msg in messages %}
+        <p style="color:red">{{ msg }}</p>
+    {% endfor %}
+{% endif %}
+{% block content %}{% endblock %}
+</body>
+</html>

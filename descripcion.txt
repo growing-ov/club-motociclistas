@@ -1,0 +1,60 @@
+CLUB DE MOTOCICLISTAS - DESCRIPCION DEL PROYECTO
+
+Nombre del proyecto: Club de Motociclistas
+Framework: Django 6.1 con django-mongodb-backend (ORM sobre MongoDB)
+Lenguaje: Python 3.12+
+
+Descripcion:
+El Club de Motociclistas es una aplicacion web para administrar las
+actividades y miembros de un club dedicado a las motos. Permite llevar
+el control de los socios, sus motocicletas, las rodadas (salidas
+grupales), las inscripciones a dichas rodadas y los mantenimientos que
+se realizan a cada moto.
+
+Proposito de la aplicacion:
+Centralizar la gestion del club en un solo sistema, reemplazando el uso
+de planillas y registros manuales. La aplicacion facilita al
+administrador del club:
+- Registrar y consultar socios (motociclistas) y sus documentos.
+- Registrar las motos de cada socio y dar seguimiento a su
+  mantenimiento.
+- Programar rodadas, controlar el cupo y registrar las inscripciones.
+- Documentar accidentes y guardar una galeria de fotos por rodada.
+
+Estructura del proyecto (3 apps Django):
+
+1) socios: Gestiona a las personas miembros del club.
+   Modelos: Motociclista, DocumentoSocio.
+
+2) flota: Gestiona los vehiculos del club y su cuidado.
+   Modelos: Moto, Mantenimiento, Accidente.
+
+3) eventos: Gestiona las salidas grupales y la participacion.
+   Modelos: Rodada, Inscripcion, Galeria.
+
+Implementacion de las vistas:
+Cada modelo cuenta con operaciones CRUD completas implementadas como
+funciones (function-based views) en su respectivo archivo views.py.
+Las vistas usan render() para cargar templates HTML de Django y
+redirect() para navegar despues de cada operacion. Los formularios se
+gestionan con ModelForm y se renderizan con {{ form.as_p }} en los
+templates. Las vistas validan las reglas de negocio principales del
+dominio (unicidad de correo, edad minima 18 anos, maximo 3 motos por
+socio, anio del vehiculo entre 1990 y 2026, cupo de rodadas entre 2
+y 80, no inscripcion duplicada, rodada no pasada al inscribirse, etc.).
+
+Archivos del proyecto:
+- club_motociclistas/: configuracion del proyecto Django
+  (settings.py, urls.py, wsgi.py, asgi.py).
+- socios/, flota/, eventos/: cada una con models.py, views.py,
+  urls.py, forms.py, admin.py, apps.py y su carpeta templates/
+  con los archivos HTML correspondientes.
+- manage.py: punto de entrada del proyecto.
+- requirements.txt: dependencias (Django, django-mongodb-backend,
+  pymongo).
+- descripcion.txt: este archivo.
+
+Base de datos: MongoDB, accedida a traves del ORM de Django mediante
+el paquete oficial django-mongodb-backend, manteniendo la sintaxis
+estandar de Django (from django.db import models) en todos los
+modelos.

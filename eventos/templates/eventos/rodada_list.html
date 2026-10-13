@@ -1,0 +1,17 @@
+{% extends "eventos/base.html" %}
+
+{% block content %}
+<h1>Rodadas</h1>
+<a href="{% url 'rodada_create' %}">Nueva</a>
+<ul>
+{% for r in object_list %}
+    <li>
+        {{ r.nombre }} - {{ r.fechaSalida|date:"Y-m-d" }} - {{ r.destino }} (cupo {{ r.cupoMaximo }})
+        [<a href="{% url 'rodada_update' r.pk %}">editar</a>]
+        [<a href="{% url 'rodada_delete' r.pk %}">eliminar</a>]
+    </li>
+{% empty %}
+    <li>Sin rodadas.</li>
+{% endfor %}
+</ul>
+{% endblock %}

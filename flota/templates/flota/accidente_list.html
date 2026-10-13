@@ -1,0 +1,17 @@
+{% extends "flota/base.html" %}
+
+{% block content %}
+<h1>Accidentes</h1>
+<a href="{% url 'accidente_create' %}">Nuevo</a>
+<ul>
+{% for a in object_list %}
+    <li>
+        {{ a.gravedad }} - {{ a.fecha|date:"Y-m-d" }} - {{ a.ubicacion }} (moto {{ a.idMoto }})
+        [<a href="{% url 'accidente_update' a.pk %}">editar</a>]
+        [<a href="{% url 'accidente_delete' a.pk %}">eliminar</a>]
+    </li>
+{% empty %}
+    <li>Sin accidentes registrados.</li>
+{% endfor %}
+</ul>
+{% endblock %}

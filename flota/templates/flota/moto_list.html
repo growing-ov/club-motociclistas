@@ -1,0 +1,17 @@
+{% extends "flota/base.html" %}
+
+{% block content %}
+<h1>Motos</h1>
+<a href="{% url 'moto_create' %}">Nueva</a>
+<ul>
+{% for m in object_list %}
+    <li>
+        {{ m.placa }} - {{ m.marca }} {{ m.modelo }} ({{ m.anio }}) - dueno: {{ m.idMotociclista }}
+        [<a href="{% url 'moto_update' m.pk %}">editar</a>]
+        [<a href="{% url 'moto_delete' m.pk %}">eliminar</a>]
+    </li>
+{% empty %}
+    <li>Sin motos registradas.</li>
+{% endfor %}
+</ul>
+{% endblock %}

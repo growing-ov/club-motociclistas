@@ -1,0 +1,18 @@
+{% extends "eventos/base.html" %}
+
+{% block content %}
+<h1>Galeria</h1>
+<a href="{% url 'galeria_create' %}">Nueva</a>
+<ul>
+{% for g in object_list %}
+    <li>
+        {{ g.titulo }} - rodada {{ g.idRodada }} - {{ g.fechaSubida|date:"Y-m-d" }}
+        [<a href="{{ g.urlFoto }}">ver foto</a>]
+        [<a href="{% url 'galeria_update' g.pk %}">editar</a>]
+        [<a href="{% url 'galeria_delete' g.pk %}">eliminar</a>]
+    </li>
+{% empty %}
+    <li>Sin fotos.</li>
+{% endfor %}
+</ul>
+{% endblock %}

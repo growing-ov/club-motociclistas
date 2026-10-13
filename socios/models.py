@@ -1,0 +1,38 @@
+from django.db import models
+
+
+class Motociclista(models.Model):
+    nombre = models.CharField(max_length=100)
+    apellido = models.CharField(max_length=100)
+    correo = models.EmailField(max_length=254, unique=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    fechaNacimiento = models.DateField()
+    activo = models.BooleanField(default=True)
+    tipoLicencia = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nombre} {self.apellido}"
+
+    class Meta:
+        verbose_name = "Motociclista"
+        verbose_name_plural = "Motociclistas"
+
+
+class DocumentoSocio(models.Model):
+    nombreDocumento = models.CharField(max_length=80)
+    numeroDocumento = models.CharField(max_length=60)
+    fechaEmision = models.DateField()
+    fechaVencimiento = models.DateField()
+    archivoUrl = models.URLField(max_length=500, blank=True, null=True)
+    idMotociclista = models.ForeignKey(
+        Motociclista,
+        on_delete=models.CASCADE,
+        related_name="documentos",
+    )
+
+    def __str__(self):
+        return f"{self.nombreDocumento} - {self.numeroDocumento}"
+
+    class Meta:
+        verbose_name = "Documento de socio"
+        verbose_name_plural = "Documentos de socios"

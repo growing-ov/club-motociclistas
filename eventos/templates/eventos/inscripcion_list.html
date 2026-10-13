@@ -1,0 +1,18 @@
+{% extends "eventos/base.html" %}
+
+{% block content %}
+<h1>Inscripciones</h1>
+<a href="{% url 'inscripcion_create' %}">Nueva</a>
+<ul>
+{% for i in object_list %}
+    <li>
+        {{ i.idMotociclista }} -> {{ i.idRodada }} ({{ i.fechaInscripcion|date:"Y-m-d" }})
+        {% if i.asistio %}asistio{% endif %}
+        [<a href="{% url 'inscripcion_update' i.pk %}">editar</a>]
+        [<a href="{% url 'inscripcion_delete' i.pk %}">eliminar</a>]
+    </li>
+{% empty %}
+    <li>Sin inscripciones.</li>
+{% endfor %}
+</ul>
+{% endblock %}
