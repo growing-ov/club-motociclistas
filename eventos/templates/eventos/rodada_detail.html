@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}{{ object.nombre }}{% endblock %}
+
+{% block content %}
+<div class="encabezado">
+    <h2>{{ object.nombre }}</h2>
+    <div>
+        <a class="boton" href="{% url 'rodada_update' object.pk %}">Editar</a>
+        <a class="boton boton-peligro" href="{% url 'rodada_delete' object.pk %}">Eliminar</a>
+        <a class="boton" href="{% url 'rodada_list' %}">Volver</a>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <h3>Datos de la rodada</h3>
+    <p><strong>Fecha de salida:</strong> {{ object.fechaSalida|date:"d/m/Y H:i" }}</p>
+    <p><strong>Punto de encuentro:</strong> {{ object.puntoEncuentro }}</p>
+    <p><strong>Destino:</strong> {{ object.destino }}</p>
+    <p><strong>Estado:</strong> {{ object.get_estado_display }}</p>
+    <p><strong>Cupo maximo:</strong> {{ object.cupoMaximo }}</p>
+    <p><strong>Distancia:</strong> {{ object.distanciaKm|default:"-" }} km</p>
+    <p><strong>Costo:</strong> ${{ object.costo|default:"-" }}</p>
+</div>
+
+<h3>Inscripciones</h3>
+<table>
+    <thead>
+        <tr><th>Motociclista</th><th>Fecha de inscripcion</th><th>Asistio</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+    {% for inscripcion in inscripciones %}
+        <tr>
+            <td>
+                <a href="{% url 'motociclista_detail' inscripcion.idMotociclista.pk %}">
+                    {{ inscripcion.idMotociclista }}
+                </a>
+            </td>
+            <td>{{ inscripcion.fechaInscripcion|date:"d/m/Y" }}</td>
+            <td>{{ inscripcion.asistio|yesno:"Si,No" }}</td>
+            <td class="acciones">
+                <a href="{% url 'inscripcion_detail' inscripcion.pk %}">Ver</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4" class="vacio">Esta rodada no tiene inscripciones.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<h3>Galeria de fotos</h3>
+<table>
+    <thead>
+        <tr><th>Titulo</th><th>Fecha de subida</th><th>Foto</th><th>Acciones</th></tr>
+    </thead>
+    <tbody>
+    {% for foto in galeria %}
+        <tr>
+            <td>{{ foto.titulo }}</td>
+            <td>{{ foto.fechaSubida|date:"d/m/Y" }}</td>
+            <td><a href="{{ foto.urlFoto }}" target="_blank">Ver foto</a></td>
+            <td class="acciones">
+                <a href="{% url 'galeria_detail' foto.pk %}">Ver</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4" class="vacio">Esta rodada no tiene fotos en su galeria.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

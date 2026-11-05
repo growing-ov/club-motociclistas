@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Inscripcion{% endblock %}
+
+{% block content %}
+<div class="encabezado">
+    <h2>Inscripcion</h2>
+    <div>
+        <a class="boton" href="{% url 'inscripcion_update' object.pk %}">Editar</a>
+        <a class="boton boton-peligro" href="{% url 'inscripcion_delete' object.pk %}">Eliminar</a>
+        <a class="boton" href="{% url 'inscripcion_list' %}">Volver</a>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <h3>Datos de la inscripcion</h3>
+    <p><strong>Fecha de inscripcion:</strong> {{ object.fechaInscripcion|date:"d/m/Y H:i" }}</p>
+    <p><strong>Asistio:</strong> {{ object.asistio|yesno:"Si,No" }}</p>
+    <p><strong>Observaciones:</strong> {{ object.observaciones|default:"-" }}</p>
+    <p>
+        <strong>Motociclista:</strong>
+        <a href="{% url 'motociclista_detail' socio.pk %}">{{ socio }}</a>
+    </p>
+    <p>
+        <strong>Rodada:</strong>
+        <a href="{% url 'rodada_detail' rodada.pk %}">{{ rodada }}</a>
+    </p>
+</div>
+{% endblock %}

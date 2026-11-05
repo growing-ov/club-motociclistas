@@ -1,17 +1,49 @@
-{% extends "socios/base.html" %}
+{% extends "base.html" %}
+
+{% block title %}Motociclistas{% endblock %}
 
 {% block content %}
-<h1>Motociclistas</h1>
-<a href="{% url 'motociclista_create' %}">Nuevo</a>
-<ul>
-{% for m in object_list %}
-    <li>
-        {{ m.nombre }} {{ m.apellido }} - {{ m.correo }}
-        [<a href="{% url 'motociclista_update' m.pk %}">editar</a>]
-        [<a href="{% url 'motociclista_delete' m.pk %}">eliminar</a>]
-    </li>
-{% empty %}
-    <li>Sin motociclistas registrados.</li>
-{% endfor %}
-</ul>
+<div class="encabezado">
+    <h2>Motociclistas</h2>
+    <a class="boton boton-primario" href="{% url 'motociclista_create' %}">Nuevo motociclista</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Telefono</th>
+            <th>Licencia</th>
+            <th>Activo</th>
+            <th>Foto</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for socio in object_list %}
+        <tr>
+            <td>{{ socio.nombre }} {{ socio.apellido }}</td>
+            <td>{{ socio.correo }}</td>
+            <td>{{ socio.telefono|default:"-" }}</td>
+            <td>{{ socio.tipoLicencia|default:"-" }}</td>
+            <td>{{ socio.activo|yesno:"Si,No" }}</td>
+            <td>
+                {% if socio.fotoUrl %}
+                    <img class="mini" src="{{ socio.fotoUrl }}" alt="Foto de {{ socio.nombre }}">
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="acciones">
+                <a href="{% url 'motociclista_detail' socio.pk %}">Ver</a>
+                <a href="{% url 'motociclista_update' socio.pk %}">Editar</a>
+                <a href="{% url 'motociclista_delete' socio.pk %}">Eliminar</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="7" class="vacio">Sin motociclistas registrados.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

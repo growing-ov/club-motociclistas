@@ -1,11 +1,18 @@
-{% extends "flota/base.html" %}
+{% extends "base.html" %}
+
+{% block title %}Eliminar moto{% endblock %}
 
 {% block content %}
-<h1>Eliminar moto</h1>
-<p>Estas seguro de eliminar <b>{{ object }}</b>?</p>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Si, eliminar</button>
-    <a href="{% url 'moto_list' %}">Cancelar</a>
-</form>
+<div class="encabezado">
+    <h2>Eliminar moto</h2>
+</div>
+
+<div class="tarjeta">
+    <p>Estas seguro de eliminar <strong>{{ object }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="boton boton-peligro" type="submit">Si, eliminar</button>
+        <a class="boton" href="{% url 'moto_list' %}">Cancelar</a>
+    </form>
+</div>
 {% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ object.titulo }}{% endblock %}
+
+{% block content %}
+<div class="encabezado">
+    <h2>{{ object.titulo }}</h2>
+    <div>
+        <a class="boton" href="{% url 'galeria_update' object.pk %}">Editar</a>
+        <a class="boton boton-peligro" href="{% url 'galeria_delete' object.pk %}">Eliminar</a>
+        <a class="boton" href="{% url 'galeria_list' %}">Volver</a>
+    </div>
+</div>
+
+<div class="tarjetas">
+    <div class="tarjeta">
+        <h3>Datos de la foto</h3>
+        <p><strong>Fecha de subida:</strong> {{ object.fechaSubida|date:"d/m/Y H:i" }}</p>
+        <p><strong>Descripcion:</strong> {{ object.descripcion|default:"-" }}</p>
+        <p>
+            <strong>Rodada:</strong>
+            <a href="{% url 'rodada_detail' rodada.pk %}">{{ rodada }}</a>
+        </p>
+    </div>
+    <div class="tarjeta">
+        <h3>Foto</h3>
+        <img class="grande" src="{{ object.urlFoto }}" alt="{{ object.titulo }}">
+        <p><a href="{{ object.urlFoto }}" target="_blank">Abrir foto</a></p>
+    </div>
+</div>
+{% endblock %}

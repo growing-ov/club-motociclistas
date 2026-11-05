@@ -1,6 +1,15 @@
+from django.core.validators import URLValidator
 from django.db import models
 
 from socios.models import Motociclista
+
+VALIDADORES_URL = [URLValidator(schemes=["http", "https"])]
+
+ESTADOS = (
+    ("programada", "Programada"),
+    ("en_curso", "En curso"),
+    ("finalizada", "Finalizada"),
+)
 
 
 class Rodada(models.Model):
@@ -8,7 +17,7 @@ class Rodada(models.Model):
     fechaSalida = models.DateTimeField()
     puntoEncuentro = models.CharField(max_length=200)
     destino = models.CharField(max_length=200)
-    estado = models.CharField(max_length=40)
+    estado = models.CharField(max_length=40, choices=ESTADOS)
     cupoMaximo = models.IntegerField()
     distanciaKm = models.IntegerField(blank=True, null=True)
     costo = models.FloatField(blank=True, null=True)
@@ -52,7 +61,7 @@ class Galeria(models.Model):
     )
     titulo = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True, null=True)
-    urlFoto = models.URLField(max_length=500)
+    urlFoto = models.URLField(max_length=500, validators=VALIDADORES_URL)
     fechaSubida = models.DateTimeField()
 
     def __str__(self):

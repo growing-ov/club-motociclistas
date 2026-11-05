@@ -3,58 +3,140 @@ CLUB DE MOTOCICLISTAS - DESCRIPCION DEL PROYECTO
 Nombre del proyecto: Club de Motociclistas
 Framework: Django 6.1 con django-mongodb-backend (ORM sobre MongoDB)
 Lenguaje: Python 3.12+
+Base de datos: MongoDB (Atlas o local)
 
-Descripcion:
+1. DESCRIPCION
+
 El Club de Motociclistas es una aplicacion web para administrar las
 actividades y miembros de un club dedicado a las motos. Permite llevar
 el control de los socios, sus motocicletas, las rodadas (salidas
-grupales), las inscripciones a dichas rodadas y los mantenimientos que
-se realizan a cada moto.
+grupales), las inscripciones a dichas rodadas, los mantenimientos de
+cada moto y los accidentes que se registran.
 
-Proposito de la aplicacion:
-Centralizar la gestion del club en un solo sistema, reemplazando el uso
-de planillas y registros manuales. La aplicacion facilita al
-administrador del club:
+Proposito:
 - Registrar y consultar socios (motociclistas) y sus documentos.
-- Registrar las motos de cada socio y dar seguimiento a su
+- Registrar las motos de cada socio (con foto) y dar seguimiento a su
   mantenimiento.
 - Programar rodadas, controlar el cupo y registrar las inscripciones.
 - Documentar accidentes y guardar una galeria de fotos por rodada.
 
-Estructura del proyecto (3 apps Django):
+2. ESTRUCTURA DEL PROYECTO (3 apps Django)
 
-1) socios: Gestiona a las personas miembros del club.
-   Modelos: Motociclista, DocumentoSocio.
+club_motociclistas/   configuracion del proyecto
+  settings.py         SECRET_KEY y MONGO_URI leidos del archivo .env
+  urls.py             url principal (home/dashboard) + include de las apps
+  views.py            vista del dashboard con el resumen de todo el club
+  wsgi.py, asgi.py    puntos de entrada
+templates/            plantilla base del proyecto
+  base.html           layout comun (menu, mensajes, {% block content %})
+  dashboard.html      pagina de inicio con contadores
+static/css/estilos.css estilos basicos del proyecto
+socios/               gestion de los miembros del club
+  models.py           Motociclista, DocumentoSocio
+  forms.py            ModelForm de cada modelo
+  views.py            vistas por funcion (lista, ver, crear, editar, eliminar)
+  urls.py             rutas de la app
+  templates/socios/   plantillas de listados, formularios, detalle y borrado
+flota/                gestion de las motos y su cuidado
+  models.py           Moto, Mantenimiento, Accidente
+  forms.py, views.py, urls.py, templates/flota/
+eventos/              gestion de las salidas grupales y la participacion
+  models.py           Rodada, Inscripcion, Galeria
+  forms.py, views.py, urls.py, templates/eventos/
 
-2) flota: Gestiona los vehiculos del club y su cuidado.
-   Modelos: Moto, Mantenimiento, Accidente.
+3. MODELOS (7)
 
-3) eventos: Gestiona las salidas grupales y la participacion.
-   Modelos: Rodada, Inscripcion, Galeria.
+socios.Motociclista
+  nombre, apellido, correo (unico), telefono, fechaNacimiento, activo,
+  tipoLicencia, fotoUrl (URL de la foto de perfil)
+socios.DocumentoSocio
+  nombreDocumento, numeroDocumento, fechaEmision, fechaVencimiento,
+  archivoUrl (URL del archivo), idMotociclista
+flota.Moto
+  placa (unica), marca, modelo, anio, tipoMoto, cilindrada, color,
+  fotoUrl (URL de la foto de la moto), idMotociclista
+flota.Mantenimiento
+  idMoto, fecha, tipo, descripcion, costo, kilometraje, realizado
+flota.Accidente
+  idMoto, fecha, descripcion, ubicacion, gravedad, costoEstimado
+eventos.Rodada
+  nombre, fechaSalida, puntoEncuentro, destino, estado, cupoMaximo,
+  distanciaKm, costo
+eventos.Inscripcion
+  idMotociclista, idRodada, fechaInscripcion, asistio, observaciones
+eventos.Galeria
+  idRodada, titulo, descripcion, urlFoto, fechaSubida
 
-Implementacion de las vistas:
-Cada modelo cuenta con operaciones CRUD completas implementadas como
-funciones (function-based views) en su respectivo archivo views.py.
-Las vistas usan render() para cargar templates HTML de Django y
-redirect() para navegar despues de cada operacion. Los formularios se
-gestionan con ModelForm y se renderizan con {{ form.as_p }} en los
-templates. Las vistas validan las reglas de negocio principales del
-dominio (unicidad de correo, edad minima 18 anos, maximo 3 motos por
-socio, anio del vehiculo entre 1990 y 2026, cupo de rodadas entre 2
-y 80, no inscripcion duplicada, rodada no pasada al inscribirse, etc.).
+4. VISTAS Y PLANTILLAS
 
-Archivos del proyecto:
-- club_motociclistas/: configuracion del proyecto Django
-  (settings.py, urls.py, wsgi.py, asgi.py).
-- socios/, flota/, eventos/: cada una con models.py, views.py,
-  urls.py, forms.py, admin.py, apps.py y su carpeta templates/
-  con los archivos HTML correspondientes.
-- manage.py: punto de entrada del proyecto.
-- requirements.txt: dependencias (Django, django-mongodb-backend,
-  pymongo).
-- descripcion.txt: este archivo.
+Cada modelo tiene el CRUD completo implementado con vistas por funcion
+(function based views) en el archivo views.py de cada app:
+- lista_<modelo>  : muestra todos los registros.
+- ver_<modelo>    : detalle del registro con sus registros relacionados.
+- crear_<modelo>  : formulario de alta.
+- editar_<modelo> : formulario de edicion.
+- eliminar_<modelo>: confirmacion y borrado.
 
-Base de datos: MongoDB, accedida a traves del ORM de Django mediante
-el paquete oficial django-mongodb-backend, manteniendo la sintaxis
-estandar de Django (from django.db import models) en todos los
-modelos.
+Todas las vistas usan el mismo patron:
+    form = <Modelo>Form(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        error = validar_<modelo>(form)
+        if error is None:
+            form.save()
+            messages.success(request, "...")
+            return redirect("<modelo>_list")
+        form.add_error(*error)
+    return render(request, "<app>/<modelo>_form.html", {"form": form})
+
+Las reglas de negocio se validan en funciones auxiliares por modelo
+(validar_moto, validar_accidente, etc.) que devuelven el campo y el
+mensaje de error, y se muestran con form.add_error.
+
+Los formularios se construyen con ModelForm y se renderizan en los
+templates con {{ form.as_p }}. Todas las plantillas heredan de
+templates/base.html y usan {% block content %}. El menu se arma con
+{% url %} de cada vista, por lo que no hay rutas escritas a mano.
+
+5. REGLAS DE NEGOCIO
+
+- Correo del socio unico (validado por el propio modelo).
+- Edad minima de 18 anos para poder registrarse como socio.
+- Maximo 3 motos por motociclista.
+- Anio de la moto entre 1990 y 2026.
+- Cilindrada entre 50 y 2500 cc (si se proporciona).
+- Mantenimientos: la fecha no puede ser futura, kilometraje y costo no
+  pueden ser negativos.
+- Accidentes: la gravedad debe ser leve, moderado o grave y la fecha no
+  puede ser futura.
+- Rodadas: la fecha de salida debe ser futura, el cupo esta entre 2 y
+  80, la distancia entre 1 y 2000 km y el costo no puede ser negativo.
+- Inscripciones: no se puede inscribir a una rodada que ya paso, ni
+  repetir al mismo motociclista en la misma rodada, ni exceder el cupo.
+- No se puede eliminar una moto con mantenimientos o accidentes, ni una
+  rodada con inscripciones o fotos, ni un socio con motos, inscripciones
+  o documentos, ni un documento que siga vigente.
+
+6. FOTOS Y ARCHIVOS
+
+Las fotos (perfil del socio, foto de la moto y galeria de las rodadas) y
+el archivo de los documentos se guardan como URL (campo URLField) y se
+validan con URLValidator para que solo acepte direcciones http o https.
+La aplicacion no sube archivos al servidor: MongoDB queda como unico
+almacen de datos.
+
+7. COMO EJECUTAR
+
+    pip install -r requirements.txt
+    (copiar el archivo .env.example a .env y poner la MONGO_URI del cluster)
+    python manage.py runserver
+
+El servidor queda en http://127.0.0.1:8000/ y la pagina de inicio
+(/ o /home) muestra el resumen del club. Cualquier ruta que no exista
+regresa al inicio.
+
+8. BASE DE DATOS
+
+MongoDB accedida a traves del ORM de Django con el paquete oficial
+django-mongodb-backend, manteniendo la sintaxis estandar de Django
+(from django.db import models) en todos los modelos. Las colecciones y
+sus validadores se encuentran en crear_colecciones.txt.

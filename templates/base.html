@@ -1,0 +1,33 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Club de Motociclistas{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+    <header>
+        <h1><a href="{% url 'home' %}">Club de Motociclistas</a></h1>
+        <nav>
+            <a href="{% url 'motociclista_list' %}">Motociclistas</a>
+            <a href="{% url 'documento_list' %}">Documentos</a>
+            <a href="{% url 'moto_list' %}">Motos</a>
+            <a href="{% url 'mantenimiento_list' %}">Mantenimientos</a>
+            <a href="{% url 'accidente_list' %}">Accidentes</a>
+            <a href="{% url 'rodada_list' %}">Rodadas</a>
+            <a href="{% url 'inscripcion_list' %}">Inscripciones</a>
+            <a href="{% url 'galeria_list' %}">Galeria</a>
+        </nav>
+    </header>
+    <main>
+        {% if messages %}
+            {% for mensaje in messages %}
+                <p class="alerta {{ mensaje.tags }}">{{ mensaje }}</p>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

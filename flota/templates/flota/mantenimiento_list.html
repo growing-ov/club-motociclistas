@@ -1,17 +1,49 @@
-{% extends "flota/base.html" %}
+{% extends "base.html" %}
+
+{% block title %}Mantenimientos{% endblock %}
 
 {% block content %}
-<h1>Mantenimientos</h1>
-<a href="{% url 'mantenimiento_create' %}">Nuevo</a>
-<ul>
-{% for m in object_list %}
-    <li>
-        {{ m.tipo }} - moto {{ m.idMoto }} - {{ m.fecha|date:"Y-m-d" }} - ${{ m.costo }}
-        [<a href="{% url 'mantenimiento_update' m.pk %}">editar</a>]
-        [<a href="{% url 'mantenimiento_delete' m.pk %}">eliminar</a>]
-    </li>
-{% empty %}
-    <li>Sin mantenimientos.</li>
-{% endfor %}
-</ul>
+<div class="encabezado">
+    <h2>Mantenimientos</h2>
+    <a class="boton boton-primario" href="{% url 'mantenimiento_create' %}">Nuevo mantenimiento</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Moto</th>
+            <th>Descripcion</th>
+            <th>Kilometraje</th>
+            <th>Costo</th>
+            <th>Realizado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for mantenimiento in object_list %}
+        <tr>
+            <td>{{ mantenimiento.fecha|date:"d/m/Y" }}</td>
+            <td>{{ mantenimiento.tipo }}</td>
+            <td>
+                <a href="{% url 'moto_detail' mantenimiento.idMoto.pk %}">
+                    {{ mantenimiento.idMoto }}
+                </a>
+            </td>
+            <td>{{ mantenimiento.descripcion }}</td>
+            <td>{{ mantenimiento.kilometraje }}</td>
+            <td>${{ mantenimiento.costo }}</td>
+            <td>{{ mantenimiento.realizado|yesno:"Si,No" }}</td>
+            <td class="acciones">
+                <a href="{% url 'mantenimiento_detail' mantenimiento.pk %}">Ver</a>
+                <a href="{% url 'mantenimiento_update' mantenimiento.pk %}">Editar</a>
+                <a href="{% url 'mantenimiento_delete' mantenimiento.pk %}">Eliminar</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="8" class="vacio">Sin mantenimientos registrados.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

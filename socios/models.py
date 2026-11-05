@@ -1,4 +1,7 @@
+from django.core.validators import URLValidator
 from django.db import models
+
+VALIDADORES_URL = [URLValidator(schemes=["http", "https"])]
 
 
 class Motociclista(models.Model):
@@ -9,6 +12,12 @@ class Motociclista(models.Model):
     fechaNacimiento = models.DateField()
     activo = models.BooleanField(default=True)
     tipoLicencia = models.CharField(max_length=50, blank=True, null=True)
+    fotoUrl = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        validators=VALIDADORES_URL,
+    )
 
     def __str__(self):
         return f"{self.nombre} {self.apellido}"
@@ -23,7 +32,12 @@ class DocumentoSocio(models.Model):
     numeroDocumento = models.CharField(max_length=60)
     fechaEmision = models.DateField()
     fechaVencimiento = models.DateField()
-    archivoUrl = models.URLField(max_length=500, blank=True, null=True)
+    archivoUrl = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        validators=VALIDADORES_URL,
+    )
     idMotociclista = models.ForeignKey(
         Motociclista,
         on_delete=models.CASCADE,

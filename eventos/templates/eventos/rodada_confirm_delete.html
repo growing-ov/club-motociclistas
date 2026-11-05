@@ -1,11 +1,18 @@
-{% extends "eventos/base.html" %}
+{% extends "base.html" %}
+
+{% block title %}Eliminar rodada{% endblock %}
 
 {% block content %}
-<h1>Eliminar rodada</h1>
-<p>Estas seguro de eliminar <b>{{ object }}</b>?</p>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Si, eliminar</button>
-    <a href="{% url 'rodada_list' %}">Cancelar</a>
-</form>
+<div class="encabezado">
+    <h2>Eliminar rodada</h2>
+</div>
+
+<div class="tarjeta">
+    <p>Estas seguro de eliminar <strong>{{ object }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="boton boton-peligro" type="submit">Si, eliminar</button>
+        <a class="boton" href="{% url 'rodada_list' %}">Cancelar</a>
+    </form>
+</div>
 {% endblock %}

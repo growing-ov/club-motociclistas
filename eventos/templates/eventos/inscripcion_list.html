@@ -1,18 +1,49 @@
-{% extends "eventos/base.html" %}
+{% extends "base.html" %}
+
+{% block title %}Inscripciones{% endblock %}
 
 {% block content %}
-<h1>Inscripciones</h1>
-<a href="{% url 'inscripcion_create' %}">Nueva</a>
-<ul>
-{% for i in object_list %}
-    <li>
-        {{ i.idMotociclista }} -> {{ i.idRodada }} ({{ i.fechaInscripcion|date:"Y-m-d" }})
-        {% if i.asistio %}asistio{% endif %}
-        [<a href="{% url 'inscripcion_update' i.pk %}">editar</a>]
-        [<a href="{% url 'inscripcion_delete' i.pk %}">eliminar</a>]
-    </li>
-{% empty %}
-    <li>Sin inscripciones.</li>
-{% endfor %}
-</ul>
+<div class="encabezado">
+    <h2>Inscripciones</h2>
+    <a class="boton boton-primario" href="{% url 'inscripcion_create' %}">Nueva inscripcion</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Motociclista</th>
+            <th>Rodada</th>
+            <th>Fecha de inscripcion</th>
+            <th>Asistio</th>
+            <th>Observaciones</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for inscripcion in object_list %}
+        <tr>
+            <td>
+                <a href="{% url 'motociclista_detail' inscripcion.idMotociclista.pk %}">
+                    {{ inscripcion.idMotociclista }}
+                </a>
+            </td>
+            <td>
+                <a href="{% url 'rodada_detail' inscripcion.idRodada.pk %}">
+                    {{ inscripcion.idRodada }}
+                </a>
+            </td>
+            <td>{{ inscripcion.fechaInscripcion|date:"d/m/Y" }}</td>
+            <td>{{ inscripcion.asistio|yesno:"Si,No" }}</td>
+            <td>{{ inscripcion.observaciones|default:"-" }}</td>
+            <td class="acciones">
+                <a href="{% url 'inscripcion_detail' inscripcion.pk %}">Ver</a>
+                <a href="{% url 'inscripcion_update' inscripcion.pk %}">Editar</a>
+                <a href="{% url 'inscripcion_delete' inscripcion.pk %}">Eliminar</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6" class="vacio">Sin inscripciones registradas.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

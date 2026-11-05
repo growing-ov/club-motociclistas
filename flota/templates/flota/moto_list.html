@@ -1,17 +1,55 @@
-{% extends "flota/base.html" %}
+{% extends "base.html" %}
+
+{% block title %}Motos{% endblock %}
 
 {% block content %}
-<h1>Motos</h1>
-<a href="{% url 'moto_create' %}">Nueva</a>
-<ul>
-{% for m in object_list %}
-    <li>
-        {{ m.placa }} - {{ m.marca }} {{ m.modelo }} ({{ m.anio }}) - dueno: {{ m.idMotociclista }}
-        [<a href="{% url 'moto_update' m.pk %}">editar</a>]
-        [<a href="{% url 'moto_delete' m.pk %}">eliminar</a>]
-    </li>
-{% empty %}
-    <li>Sin motos registradas.</li>
-{% endfor %}
-</ul>
+<div class="encabezado">
+    <h2>Motos</h2>
+    <a class="boton boton-primario" href="{% url 'moto_create' %}">Nueva moto</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Placa</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Anio</th>
+            <th>Tipo</th>
+            <th>Dueno</th>
+            <th>Foto</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for moto in object_list %}
+        <tr>
+            <td>{{ moto.placa }}</td>
+            <td>{{ moto.marca }}</td>
+            <td>{{ moto.modelo }}</td>
+            <td>{{ moto.anio }}</td>
+            <td>{{ moto.tipoMoto }}</td>
+            <td>
+                <a href="{% url 'motociclista_detail' moto.idMotociclista.pk %}">
+                    {{ moto.idMotociclista }}
+                </a>
+            </td>
+            <td>
+                {% if moto.fotoUrl %}
+                    <img class="mini" src="{{ moto.fotoUrl }}" alt="Foto de {{ moto.placa }}">
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="acciones">
+                <a href="{% url 'moto_detail' moto.pk %}">Ver</a>
+                <a href="{% url 'moto_update' moto.pk %}">Editar</a>
+                <a href="{% url 'moto_delete' moto.pk %}">Eliminar</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="8" class="vacio">Sin motos registradas.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
 {% endblock %}

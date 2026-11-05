@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<div class="encabezado">
+    <h2>Resumen del club</h2>
+</div>
+
+<div class="tarjetas">
+    <div class="tarjeta">
+        <h3>Motociclistas</h3>
+        <p class="cifra">{{ datos.socios }}</p>
+        <a href="{% url 'motociclista_list' %}">Ver socios</a>
+    </div>
+    <div class="tarjeta">
+        <h3>Documentos</h3>
+        <p class="cifra">{{ datos.documentos }}</p>
+        <a href="{% url 'documento_list' %}">Ver documentos</a>
+    </div>
+    <div class="tarjeta">
+        <h3>Motos</h3>
+        <p class="cifra">{{ datos.motos }}</p>
+        <a href="{% url 'moto_list' %}">Ver motos</a>
+    </div>
+    <div class="tarjeta">
+        <h3>Mantenimientos</h3>
+        <p class="cifra">{{ datos.mantenimientos }}</p>
+        <a href="{% url 'mantenimiento_list' %}">Ver mantenimientos</a>
+    </div>
+    <div class="tarjeta">
+        <h3>Accidentes</h3>
+        <p class="cifra">{{ datos.accidentes }}</p>
+        <a href="{% url 'accidente_list' %}">Ver accidentes</a>
+    </div>
+    <div class="tarjeta">
+        <h3>Rodadas</h3>
+        <p class="cifra">{{ datos.rodadas }}</p>
+        <a href="{% url 'rodada_list' %}">Ver rodadas</a>
+    </div>
+    <div class="tarjeta">
+        <h3>Inscripciones</h3>
+        <p class="cifra">{{ datos.inscripciones }}</p>
+        <a href="{% url 'inscripcion_list' %}">Ver inscripciones</a>
+    </div>
+    <div class="tarjeta">
+        <h3>Fotos de galeria</h3>
+        <p class="cifra">{{ datos.fotos }}</p>
+        <a href="{% url 'galeria_list' %}">Ver galeria</a>
+    </div>
+</div>
+{% endblock %}

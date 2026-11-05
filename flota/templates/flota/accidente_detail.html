@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Accidente del {{ object.fecha|date:"d/m/Y" }}{% endblock %}
+
+{% block content %}
+<div class="encabezado">
+    <h2>Accidente - {{ object.get_gravedad_display }}</h2>
+    <div>
+        <a class="boton" href="{% url 'accidente_update' object.pk %}">Editar</a>
+        <a class="boton boton-peligro" href="{% url 'accidente_delete' object.pk %}">Eliminar</a>
+        <a class="boton" href="{% url 'accidente_list' %}">Volver</a>
+    </div>
+</div>
+
+<div class="tarjeta">
+    <h3>Datos del accidente</h3>
+    <p><strong>Fecha:</strong> {{ object.fecha|date:"d/m/Y H:i" }}</p>
+    <p><strong>Gravedad:</strong> {{ object.get_gravedad_display }}</p>
+    <p><strong>Ubicacion:</strong> {{ object.ubicacion }}</p>
+    <p><strong>Descripcion:</strong> {{ object.descripcion }}</p>
+    <p><strong>Costo estimado:</strong> ${{ object.costoEstimado|default:"-" }}</p>
+    <p>
+        <strong>Moto:</strong>
+        <a href="{% url 'moto_detail' moto.pk %}">{{ moto }}</a>
+    </p>
+</div>
+{% endblock %}

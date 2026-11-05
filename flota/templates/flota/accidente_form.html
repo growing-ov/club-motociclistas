@@ -1,11 +1,16 @@
-{% extends "flota/base.html" %}
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} accidente{% endblock %}
 
 {% block content %}
-<h1>{% if object %}Editar{% else %}Nuevo{% endif %} accidente</h1>
-<form method="post">
+<div class="encabezado">
+    <h2>{% if object %}Editar{% else %}Nuevo{% endif %} accidente</h2>
+</div>
+
+<form method="post" class="tarjeta">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Guardar</button>
-    <a href="{% url 'accidente_list' %}">Cancelar</a>
+    <button class="boton boton-primario" type="submit">Guardar</button>
+    <a class="boton" href="{% url 'accidente_list' %}">Cancelar</a>
 </form>
 {% endblock %}

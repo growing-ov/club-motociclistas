@@ -6,51 +6,85 @@ from .forms import GaleriaForm, InscripcionForm, RodadaForm
 from .models import Galeria, Inscripcion, Rodada
 
 
+def validar_rodada(form):
+    datos = form.cleaned_data
+    fecha = datos["fechaSalida"]
+    if fecha and fecha <= timezone.now():
+        return ("fechaSalida", "La fecha de salida debe ser futura")
+    if not (2 <= datos["cupoMaximo"] <= 80):
+        return ("cupoMaximo", "El cupo debe estar entre 2 y 80")
+    distancia = datos.get("distanciaKm")
+    if distancia is not None and not (1 <= distancia <= 2000):
+        return ("distanciaKm", "La distancia debe estar entre 1 y 2000 km")
+    costo = datos.get("costo")
+    if costo is not None and costo < 0:
+        return ("costo", "El costo no puede ser negativo")
+    return None
+
+
+def validar_inscripcion(form):
+    datos = form.cleaned_data
+    rodada = datos["idRodada"]
+    if rodada.fechaSalida and rodada.fechaSalida <= timezone.now():
+        return ("idRodada", "La rodada ya paso")
+    inscritos = rodada.inscripciones.all()
+    if form.instance.pk:
+        inscritos = inscritos.exclude(pk=form.instance.pk)
+    if inscritos.count() >= rodada.cupoMaximo:
+        return ("idRodada", "El cupo de la rodada ya esta lleno")
+    repetidas = Inscripcion.objects.filter(
+        idMotociclista=datos["idMotociclista"],
+        idRodada=rodada,
+    )
+    if form.instance.pk:
+        repetidas = repetidas.exclude(pk=form.instance.pk)
+    if repetidas.exists():
+        return ("idMotociclista", "El motociclista ya esta inscrito en esta rodada")
+    return None
+
+
 def lista_rodadas(request):
     items = Rodada.objects.all().order_by("fechaSalida")
     return render(request, "eventos/rodada_list.html", {"object_list": items})
 
 
+def ver_rodada(request, pk):
+    obj = get_object_or_404(Rodada, pk=pk)
+    return render(
+        request,
+        "eventos/rodada_detail.html",
+        {
+            "object": obj,
+            "inscripciones": obj.inscripciones.select_related("idMotociclista").all().order_by(
+                "fechaInscripcion"
+            ),
+            "galeria": obj.galeria.all().order_by("-fechaSubida"),
+        },
+    )
+
+
 def crear_rodada(request):
-    if request.method == "POST":
-        form = RodadaForm(request.POST)
-        if form.is_valid():
-            fecha = form.cleaned_data["fechaSalida"]
-            if fecha and fecha <= timezone.now():
-                form.add_error("fechaSalida", "La fecha de salida debe ser futura")
-            elif not (2 <= form.cleaned_data["cupoMaximo"] <= 80):
-                form.add_error("cupoMaximo", "El cupo debe estar entre 2 y 80")
-            else:
-                distancia = form.cleaned_data.get("distanciaKm")
-                if distancia is not None and not (1 <= distancia <= 2000):
-                    form.add_error("distanciaKm", "La distancia debe estar entre 1 y 2000 km")
-                else:
-                    costo = form.cleaned_data.get("costo")
-                    if costo is not None and costo < 0:
-                        form.add_error("costo", "No puede ser negativo")
-                    else:
-                        form.save()
-                        return redirect("rodada_list")
-    else:
-        form = RodadaForm()
+    form = RodadaForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        error = validar_rodada(form)
+        if error is None:
+            form.save()
+            messages.success(request, "Rodada programada correctamente.")
+            return redirect("rodada_list")
+        form.add_error(*error)
     return render(request, "eventos/rodada_form.html", {"form": form})
 
 
 def editar_rodada(request, pk):
     obj = get_object_or_404(Rodada, pk=pk)
-    if request.method == "POST":
-        form = RodadaForm(request.POST, instance=obj)
-        if form.is_valid():
-            fecha = form.cleaned_data["fechaSalida"]
-            if fecha and fecha <= timezone.now():
-                form.add_error("fechaSalida", "La fecha debe ser futura")
-            elif not (2 <= form.cleaned_data["cupoMaximo"] <= 80):
-                form.add_error("cupoMaximo", "Cupo fuera de rango")
-            else:
-                form.save()
-                return redirect("rodada_list")
-    else:
-        form = RodadaForm(instance=obj)
+    form = RodadaForm(request.POST or None, instance=obj)
+    if request.method == "POST" and form.is_valid():
+        error = validar_rodada(form)
+        if error is None:
+            form.save()
+            messages.success(request, "Rodada actualizada correctamente.")
+            return redirect("rodada_list")
+        form.add_error(*error)
     return render(request, "eventos/rodada_form.html", {"form": form, "object": obj})
 
 
@@ -61,52 +95,52 @@ def eliminar_rodada(request, pk):
             messages.error(request, "No se puede eliminar: tiene inscripciones o fotos.")
         else:
             obj.delete()
+            messages.success(request, "Rodada eliminada correctamente.")
             return redirect("rodada_list")
     return render(request, "eventos/rodada_confirm_delete.html", {"object": obj})
 
 
 def lista_inscripciones(request):
-    items = Inscripcion.objects.all()
+    items = Inscripcion.objects.select_related("idMotociclista", "idRodada").all().order_by(
+        "-fechaInscripcion"
+    )
     return render(request, "eventos/inscripcion_list.html", {"object_list": items})
 
 
+def ver_inscripcion(request, pk):
+    obj = get_object_or_404(
+        Inscripcion.objects.select_related("idMotociclista", "idRodada"),
+        pk=pk,
+    )
+    return render(
+        request,
+        "eventos/inscripcion_detail.html",
+        {"object": obj, "socio": obj.idMotociclista, "rodada": obj.idRodada},
+    )
+
+
 def crear_inscripcion(request):
-    if request.method == "POST":
-        form = InscripcionForm(request.POST)
-        if form.is_valid():
-            rodada = form.cleaned_data["idRodada"]
-            if rodada.fechaSalida and rodada.fechaSalida <= timezone.now():
-                form.add_error("idRodada", "La rodada ya paso")
-            elif rodada.inscripciones.count() >= rodada.cupoMaximo:
-                form.add_error("idRodada", "Cupo lleno")
-            elif Inscripcion.objects.filter(
-                idMotociclista=form.cleaned_data["idMotociclista"],
-                idRodada=rodada,
-            ).exists():
-                form.add_error("idMotociclista", "El motociclista ya esta inscrito en esta rodada")
-            else:
-                form.save()
-                return redirect("inscripcion_list")
-    else:
-        form = InscripcionForm()
+    form = InscripcionForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        error = validar_inscripcion(form)
+        if error is None:
+            form.save()
+            messages.success(request, "Inscripcion registrada correctamente.")
+            return redirect("inscripcion_list")
+        form.add_error(*error)
     return render(request, "eventos/inscripcion_form.html", {"form": form})
 
 
 def editar_inscripcion(request, pk):
     obj = get_object_or_404(Inscripcion, pk=pk)
-    if request.method == "POST":
-        form = InscripcionForm(request.POST, instance=obj)
-        if form.is_valid():
-            if Inscripcion.objects.filter(
-                idMotociclista=form.cleaned_data["idMotociclista"],
-                idRodada=form.cleaned_data["idRodada"],
-            ).exclude(pk=obj.pk).exists():
-                form.add_error("idMotociclista", "Inscripcion duplicada")
-            else:
-                form.save()
-                return redirect("inscripcion_list")
-    else:
-        form = InscripcionForm(instance=obj)
+    form = InscripcionForm(request.POST or None, instance=obj)
+    if request.method == "POST" and form.is_valid():
+        error = validar_inscripcion(form)
+        if error is None:
+            form.save()
+            messages.success(request, "Inscripcion actualizada correctamente.")
+            return redirect("inscripcion_list")
+        form.add_error(*error)
     return render(request, "eventos/inscripcion_form.html", {"form": form, "object": obj})
 
 
@@ -114,43 +148,41 @@ def eliminar_inscripcion(request, pk):
     obj = get_object_or_404(Inscripcion, pk=pk)
     if request.method == "POST":
         obj.delete()
+        messages.success(request, "Inscripcion eliminada correctamente.")
         return redirect("inscripcion_list")
     return render(request, "eventos/inscripcion_confirm_delete.html", {"object": obj})
 
 
 def lista_galeria(request):
-    items = Galeria.objects.all()
+    items = Galeria.objects.select_related("idRodada").all().order_by("-fechaSubida")
     return render(request, "eventos/galeria_list.html", {"object_list": items})
 
 
+def ver_galeria(request, pk):
+    obj = get_object_or_404(Galeria.objects.select_related("idRodada"), pk=pk)
+    return render(
+        request,
+        "eventos/galeria_detail.html",
+        {"object": obj, "rodada": obj.idRodada},
+    )
+
+
 def crear_galeria(request):
-    if request.method == "POST":
-        form = GaleriaForm(request.POST)
-        if form.is_valid():
-            url = form.cleaned_data["urlFoto"] or ""
-            if not (url.startswith("http://") or url.startswith("https://")):
-                form.add_error("urlFoto", "URL invalida (debe iniciar con http:// o https://)")
-            else:
-                form.save()
-                return redirect("galeria_list")
-    else:
-        form = GaleriaForm()
+    form = GaleriaForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Foto agregada a la galeria correctamente.")
+        return redirect("galeria_list")
     return render(request, "eventos/galeria_form.html", {"form": form})
 
 
 def editar_galeria(request, pk):
     obj = get_object_or_404(Galeria, pk=pk)
-    if request.method == "POST":
-        form = GaleriaForm(request.POST, instance=obj)
-        if form.is_valid():
-            url = form.cleaned_data["urlFoto"] or ""
-            if not (url.startswith("http://") or url.startswith("https://")):
-                form.add_error("urlFoto", "URL invalida")
-            else:
-                form.save()
-                return redirect("galeria_list")
-    else:
-        form = GaleriaForm(instance=obj)
+    form = GaleriaForm(request.POST or None, instance=obj)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Foto actualizada correctamente.")
+        return redirect("galeria_list")
     return render(request, "eventos/galeria_form.html", {"form": form, "object": obj})
 
 
@@ -158,5 +190,6 @@ def eliminar_galeria(request, pk):
     obj = get_object_or_404(Galeria, pk=pk)
     if request.method == "POST":
         obj.delete()
+        messages.success(request, "Foto eliminada correctamente.")
         return redirect("galeria_list")
     return render(request, "eventos/galeria_confirm_delete.html", {"object": obj})
