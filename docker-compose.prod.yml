@@ -1,0 +1,75 @@
+# ---------------------------------------------------------------------------
+# Variante de produccion. Uso:
+#   docker compose -f docker-compose.prod.yml up -d --build
+# o sobre el compose de desarrollo:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Diferencias: DEBUG=False, 2 workers, collectstatic ya hecho en el build
+# (SKIP_COLLECTSTATIC=1), reinicio automatico y SECRET_KEY obligatorio.
+# ---------------------------------------------------------------------------
+name: club-motociclistas
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: club-motociclistas:prod
+    container_name: club-motociclistas-web
+    restart: unless-stopped
+    ports:
+      - "${PUERTO_WEB:-8000}:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: ${MONGO_DB:-club_motociclistas}
+      DEBUG: "False"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      # Obligatoria en produccion: defina SECRET_KEY en .env o en el entorno.
+      SECRET_KEY: ${SECRET_KEY:?define SECRET_KEY en .env para produccion}
+      DJANGO_SETTINGS_MODULE: club_motociclistas.settings
+      ESPERA_MONGO: "60"
+      # collectstatic ya se ejecuto en la etapa builder del build.
+      SKIP_COLLECTSTATIC: "1"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    command:
+      - gunicorn
+      - club_motociclistas.wsgi:application
+      - --bind
+      - 0.0.0.0:8000
+      - --workers
+      - "2"
+      - --timeout
+      - "120"
+      - --access-logfile
+      - "-"
+    volumes:
+      - media_data:/app/media
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/esquemas/', timeout=4).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  mongo:
+    image: mongo:7
+    container_name: club-motociclistas-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  mongo_data:
+  media_data:

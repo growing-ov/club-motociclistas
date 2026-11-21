@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------
+# Entorno de desarrollo con Docker Compose.
+# Uso:  docker compose up --build
+# El archivo .env es opcional: Compose lo carga para interpolar ${...} y, si
+# no existe, se usan los valores por defecto de este archivo.
+# MONGO_URI / MONGO_DB se fuerzan al servicio "mongo" de la red interna.
+# ---------------------------------------------------------------------------
+name: club-motociclistas
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: club-motociclistas:dev
+    container_name: club-motociclistas-web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      # Opcional: si existe, aporta SECRET_KEY, DEBUG, ALLOWED_HOSTS, etc.
+      - path: .env
+        required: false
+    environment:
+      # Conexion interna al servicio de Mongo (nunca "localhost" del host).
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: ${MONGO_DB:-club_motociclistas}
+      DEBUG: ${DEBUG:-True}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-cambia-esta-clave-en-produccion}
+      DJANGO_SETTINGS_MODULE: club_motociclistas.settings
+      ESPERA_MONGO: "60"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    volumes:
+      # Persistencia de archivos subidos. OJO: settings.py no define
+      # MEDIA_ROOT, hay que anadir MEDIA_ROOT="/app/media" para usar esto.
+      - media_data:/app/media
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/api/esquemas/', timeout=4).status == 200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  mongo:
+    image: mongo:7
+    container_name: club-motociclistas-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  mongo_data:
+  media_data:

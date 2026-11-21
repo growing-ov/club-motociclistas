@@ -1,0 +1,61 @@
+# ---------------------------------------------------------------------------
+# Archivos que NO entran en el contexto de build de Docker.
+# ---------------------------------------------------------------------------
+
+# Control de versiones y metadatos
+.git/
+.gitignore
+.github/
+.gitattributes
+
+# Entornos virtuales locales (la imagen usa su propio /opt/venv)
+venv/
+.venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secretos: .env jamas debe entrar en la imagen (solo .env.example)
+.env
+.env.*
+!.env.example
+
+# Artefactos generados (se regeneran con collectstatic dentro de la imagen)
+staticfiles/
+media/
+db.sqlite3
+db.sqlite3-journal
+
+# Logs
+*.log
+logs/
+log/
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Documentacion pesada: fuera las capturas para no inflar la imagen
+docs/capturas/
+docs/*.png
+docs/*.jpg
+docs/*.jpeg
+docs/*.gif
+docs/*.mp4
