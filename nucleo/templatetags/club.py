@@ -34,7 +34,7 @@ def vigente(fecha):
 
 
 @register.filter
-def iniciales(texto):
+def initiales(texto):
     """Iniciales de un nombre, para los avatares de texto."""
     partes = [parte for parte in str(texto or "").split() if parte]
     if not partes:
