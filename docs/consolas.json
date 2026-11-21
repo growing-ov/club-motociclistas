@@ -1,0 +1,365 @@
+[
+  {
+    "id": "clonar",
+    "titulo": "Clonar el repositorio",
+    "consola": [
+      {
+        "cmd": "git clone https://github.com/growing-ov/club-motociclistas.git",
+        "salida": [
+          "Cloning into 'C:\\Users\\OCTAVI~1.VEL\\AppData\\Local\\Temp\\consola-1ch544ln\\club-motociclistas'..."
+        ]
+      },
+      {
+        "cmd": "cd club-motociclistas",
+        "salida": []
+      },
+      {
+        "cmd": "git log --oneline -3",
+        "salida": [
+          "38ced24 docs: diagramas por imagen, tutorial paso a paso y DOCX regenerados",
+          "dfbf4b0 fix(docker): nombre de contenedor parametrizable para coexistence de entornos",
+          "9f6cf4c feat(docker): Atlas como base de datos y despliegue portable en cualquier maquina"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "venv",
+    "titulo": "Crear el entorno virtual e instalar las dependencias",
+    "consola": [
+      {
+        "cmd": "python -m venv venv",
+        "salida": [
+          "Actual environment location may have moved due to redirects, links or junctions.",
+          "  Requested location: \"C:\\Users\\OCTAVI~1.VEL\\AppData\\Local\\Temp\\venv-demo-86tb8wh3\\Scripts\\python.exe\"",
+          "  Actual location:    \"C:\\Users\\octavio.velazco\\AppData\\Local\\Temp\\venv-demo-86tb8wh3\\Scripts\\python.exe\""
+        ]
+      },
+      {
+        "cmd": ".\\venv\\Scripts\\Activate.ps1",
+        "salida": []
+      },
+      {
+        "cmd": "pip install -r requirements.txt",
+        "salida": [
+          "Collecting Django<7.0,>=6.1 (from -r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 1))",
+          "  Downloading django-6.1.3-py3-none-any.whl.metadata (3.9 kB)",
+          "Collecting django-mongodb-backend<7.0,>=6.1 (from -r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 2))",
+          "  Using cached django_mongodb_backend-6.1.0-py3-none-any.whl.metadata (17 kB)",
+          "Collecting pymongo>=4.6 (from -r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 3))",
+          "  Downloading pymongo-4.20.1-cp314-cp314-win_amd64.whl.metadata (10 kB)",
+          "Collecting jsonschema>=4.23 (from -r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 4))",
+          "  Using cached jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)",
+          "Collecting gunicorn>=22.0 (from -r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 5))",
+          "  Using cached gunicorn-27.0.1-py3-none-any.whl.metadata (5.6 kB)",
+          "Collecting whitenoise>=6.7 (from -r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 6))",
+          "  Using cached whitenoise-6.12.0-py3-none-any.whl.metadata (3.7 kB)",
+          "Collecting asgiref>=3.9.1 (from Django<7.0,>=6.1->-r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 1))",
+          "  Downloading asgiref-3.13.0-py3-none-any.whl.metadata (12 kB)",
+          "Collecting sqlparse>=0.5.0 (from Django<7.0,>=6.1->-r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 1))",
+          "  Downloading sqlparse-0.6.1-py3-none-any.whl.metadata (6.9 kB)",
+          "Collecting tzdata (from Django<7.0,>=6.1->-r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 1))",
+          "  Using cached tzdata-2026.6-py2.py3-none-any.whl.metadata (1.4 kB)",
+          "Collecting dnspython<3.0.0,>=2.7.0 (from pymongo>=4.6->-r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 3))",
+          "  Downloading dnspython-2.9.2-py3-none-any.whl.metadata (5.8 kB)",
+          "Collecting attrs>=22.2.0 (from jsonschema>=4.23->-r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 4))",
+          "  Using cached attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)",
+          "Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.23->-r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 4))",
+          "  Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)",
+          "Collecting referencing>=0.28.4 (from jsonschema>=4.23->-r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 4))",
+          "  Using cached referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)",
+          "Collecting rpds-py>=0.25.0 (from jsonschema>=4.23->-r C:\\Users\\octavio.velazco\\Music\\python_u\\club_motociclistas\\requirements.txt (line 4))",
+          "  Using cached rpds_py-2026.9.1-cp314-cp314-win_amd64.whl.metadata (4.2 kB)",
+          "Downloading django-6.1.3-py3-none-any.whl (8.4 MB)",
+          "   ---------------------------------------- 8.4/8.4 MB 41.8 MB/s  0:00:00",
+          "Using cached django_mongodb_backend-6.1.0-py3-none-any.whl (138 kB)",
+          "Downloading pymongo-4.20.1-cp314-cp314-win_amd64.whl (827 kB)",
+          "   ---------------------------------------- 827.6/827.6 kB 20.4 MB/s  0:00:00",
+          "Downloading dnspython-2.9.2-py3-none-any.whl (360 kB)",
+          "Using cached jsonschema-4.26.0-py3-none-any.whl (90 kB)",
+          "Using cached gunicorn-27.0.1-py3-none-any.whl (263 kB)",
+          "Using cached whitenoise-6.12.0-py3-none-any.whl (20 kB)",
+          "Downloading asgiref-3.13.0-py3-none-any.whl (27 kB)",
+          "Using cached attrs-26.1.0-py3-none-any.whl (67 kB)",
+          "Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)",
+          "Using cached referencing-0.37.0-py3-none-any.whl (26 kB)",
+          "Using cached rpds_py-2026.9.1-cp314-cp314-win_amd64.whl (222 kB)",
+          "Downloading sqlparse-0.6.1-py3-none-any.whl (51 kB)",
+          "Using cached tzdata-2026.6-py2.py3-none-any.whl (348 kB)",
+          "Installing collected packages: whitenoise, tzdata, sqlparse, rpds-py, gunicorn, dnspython, attrs, asgiref, referencing, pymongo, Django, jsonschema-specifications, django-mongodb-backend, jsonschema",
+          "",
+          "Successfully installed Django-6.1.3 asgiref-3.13.0 attrs-26.1.0 django-mongodb-backend-6.1.0 dnspython-2.9.2 gunicorn-27.0.1 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 pymongo-4.20.1 referencing-0.37.0 rpds-py-2026.9.1 sqlparse-0.6.1 tzdata-2026.6 whitenoise-6.12.0",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "WARNING: Cache entry deserialization failed, entry ignored",
+          "",
+          "[notice] A new release of pip is available: 26.1.1 -> 26.3",
+          "[notice] To update, run: C:\\Users\\octavio.velazco\\AppData\\Local\\Temp\\venv-demo-86tb8wh3\\Scripts\\python.exe -m pip install --upgrade pip"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "startproject",
+    "titulo": "Crear el proyecto Django",
+    "consola": [
+      {
+        "cmd": "python -m django startproject club_motociclistas .",
+        "salida": []
+      },
+      {
+        "cmd": "dir",
+        "salida": [
+          " El volumen de la unidad C no tiene etiqueta.",
+          " El n�mero de serie del volumen es: 8861-1FF0",
+          "",
+          " Directorio de C:\\Users\\OCTAVI~1.VEL\\AppData\\Local\\Temp\\consola-1ch544ln\\club-nuevo",
+          "",
+          "21/11/2026  08:22a.�m.    <DIR>          .",
+          "21/11/2026  08:22a.�m.    <DIR>          ..",
+          "21/11/2026  08:22a.�m.    <DIR>          club_motociclistas",
+          "21/11/2026  08:22a.�m.               696 manage.py",
+          "               1 archivos            696 bytes",
+          "               3 dirs  250.906.742.784 bytes libres"
+        ]
+      },
+      {
+        "cmd": "python manage.py check",
+        "salida": [
+          "System check identified no issues (0 silenced)."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "startapp",
+    "titulo": "Crear las cuatro aplicaciones",
+    "consola": [
+      {
+        "cmd": "python manage.py startapp nucleo",
+        "salida": []
+      },
+      {
+        "cmd": "python manage.py startapp socios",
+        "salida": []
+      },
+      {
+        "cmd": "python manage.py startapp flota",
+        "salida": []
+      },
+      {
+        "cmd": "python manage.py startapp eventos",
+        "salida": []
+      },
+      {
+        "cmd": "dir",
+        "salida": [
+          " El volumen de la unidad C no tiene etiqueta.",
+          " El n�mero de serie del volumen es: 8861-1FF0",
+          "",
+          " Directorio de C:\\Users\\OCTAVI~1.VEL\\AppData\\Local\\Temp\\consola-1ch544ln\\club-nuevo",
+          "",
+          "21/11/2026  08:22a.�m.    <DIR>          .",
+          "21/11/2026  08:22a.�m.    <DIR>          ..",
+          "21/11/2026  08:22a.�m.    <DIR>          club_motociclistas",
+          "21/11/2026  08:22a.�m.    <DIR>          eventos",
+          "21/11/2026  08:22a.�m.    <DIR>          flota",
+          "21/11/2026  08:22a.�m.               696 manage.py",
+          "21/11/2026  08:22a.�m.    <DIR>          nucleo",
+          "21/11/2026  08:22a.�m.    <DIR>          socios",
+          "               1 archivos            696 bytes",
+          "               7 dirs  250.916.098.048 bytes libres"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "check",
+    "titulo": "Comprobar el proyecto",
+    "consola": [
+      {
+        "cmd": "python manage.py check",
+        "salida": [
+          "System check identified no issues (0 silenced)."
+        ]
+      },
+      {
+        "cmd": "python manage.py showmigrations",
+        "salida": []
+      }
+    ]
+  },
+  {
+    "id": "migraciones",
+    "titulo": "Migraciones",
+    "consola": [
+      {
+        "cmd": "python manage.py makemigrations socios flota eventos",
+        "salida": [
+          "Migrations for 'eventos':",
+          "  eventos\\migrations\\0001_initial.py",
+          "    + Create model Galeria",
+          "    + Create model Inscripcion",
+          "    + Create model Rodada",
+          "Migrations for 'flota':",
+          "  flota\\migrations\\0001_initial.py",
+          "    + Create model Accidente",
+          "    + Create model Mantenimiento",
+          "    + Create model Moto",
+          "Migrations for 'socios':",
+          "  socios\\migrations\\0001_initial.py",
+          "    + Create model DocumentoSocio",
+          "    + Create model Motociclista"
+        ]
+      },
+      {
+        "cmd": "python manage.py migrate",
+        "salida": [
+          "Operations to perform:",
+          "  Apply all migrations: (none)",
+          "Running migrations:",
+          "  No migrations to apply."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "seed",
+    "titulo": "Cargar los datos de prueba",
+    "consola": [
+      {
+        "cmd": "python manage.py seed_data --flush",
+        "salida": [
+          "Vaciando colecciones...",
+          "Creando motociclistas...",
+          "  + Octavio Velasco (1)",
+          "  + Jaime Calderon (2)",
+          "  + Santiago Ramirez (3)",
+          "  + Valentina Ortiz (4)",
+          "  + Andres Moreno (5)",
+          "  + Camila Perez (6)",
+          "  + Daniel Restrepo (7)",
+          "Creando documentos...",
+          "Creando motos...",
+          "Creando mantenimientos...",
+          "Creando accidentes...",
+          "Creando rodadas...",
+          "Creando inscripciones...",
+          "Creando galeria...",
+          "",
+          "Seed completado correctamente.",
+          "",
+          "=== RESUMEN ===",
+          "Motociclistas:  7",
+          "Documentos:     28",
+          "Motos:          7",
+          "Mantenimientos: 17",
+          "Accidentes:     2",
+          "Rodadas:        5",
+          "Inscripciones:  26",
+          "Galeria:        5"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "esquemas",
+    "titulo": "Validar los datos contra los JSON Schemas",
+    "consola": [
+      {
+        "cmd": "python manage.py validar_esquemas",
+        "salida": [
+          "motociclistas      7 documentos    0 con errores  [OK]",
+          "documentos        28 documentos    0 con errores  [OK]",
+          "motos              7 documentos    0 con errores  [OK]",
+          "mantenimientos    17 documentos    0 con errores  [OK]",
+          "accidentes         2 documentos    0 con errores  [OK]",
+          "rodadas            5 documentos    0 con errores  [OK]",
+          "inscripciones     26 documentos    0 con errores  [OK]",
+          "galeria            5 documentos    0 con errores  [OK]",
+          "",
+          "Total: 97 documentos, 0 con errores.",
+          "Todos los documentos cumplen su JSON Schema."
+        ]
+      }
+    ]
+  },
+  {
+    "id": "docker",
+    "titulo": "Levantar la aplicacion con Docker",
+    "consola": [
+      {
+        "cmd": "docker compose up -d --build",
+        "salida": [
+          " Image club-motociclistas:dev Building",
+          " Image club-motociclistas:dev Built",
+          " Container club-motociclistas-web Recreate",
+          " Container club-motociclistas-web Recreated",
+          " Container club-motociclistas-web Starting",
+          " Container club-motociclistas-web Started"
+        ]
+      },
+      {
+        "cmd": "docker compose ps",
+        "salida": [
+          "NAME                     IMAGE                    COMMAND                  SERVICE   CREATED         STATUS                   PORTS",
+          "club-motociclistas-web   club-motociclistas:dev   \"/app/entrypoint.sh …\"   web       2 minutes ago   Up 2 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp"
+        ]
+      },
+      {
+        "cmd": "docker compose logs web",
+        "salida": [
+          "club-motociclistas-web  | [entrypoint] Mongo: cluster0.guj5it4.mongodb.net | Base: club_motociclistas",
+          "club-motociclistas-web  | [entrypoint] Esperando a MongoDB (max 60s) ...",
+          "club-motociclistas-web  | [entrypoint] MongoDB disponible.",
+          "club-motociclistas-web  | [entrypoint] Generando estaticos (collectstatic) ...",
+          "club-motociclistas-web  | [entrypoint] Aplicando migraciones (no-op en MongoDB) ...",
+          "club-motociclistas-web  | [2026-11-21 13:21:15 +0000] [1] [INFO] Starting gunicorn 27.0.1",
+          "club-motociclistas-web  | [2026-11-21 13:21:16 +0000] [1] [INFO] Control socket listening at /home/appuser/.gunicorn/gunicorn.ctl"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "git",
+    "titulo": "Publicar los cambios",
+    "consola": [
+      {
+        "cmd": "git status",
+        "salida": [
+          " M club_motociclistas/cascada.py",
+          " M docs/DOCUMENTACION.md",
+          " M templates/includes/cascada.html",
+          "?? docs/consolas.json",
+          "?? tools/capturar_consolas.py"
+        ]
+      },
+      {
+        "cmd": "git add .",
+        "salida": []
+      },
+      {
+        "cmd": "git commit -m \"feat(app): proyecto inicial del Club de Motociclistas\"",
+        "salida": []
+      },
+      {
+        "cmd": "git push origin main",
+        "salida": [
+          "Everything up-to-date"
+        ]
+      }
+    ]
+  }
+]

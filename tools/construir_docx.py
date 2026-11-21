@@ -315,7 +315,19 @@ def agregar_imagen(documento, ruta, alt, pie):
     parrafo = documento.add_paragraph()
     parrafo.alignment = WD_ALIGN_PARAGRAPH.CENTER
     parrafo.paragraph_format.space_before = Pt(10)
-    parrafo.add_run().add_picture(str(ruta), width=ANCHO_IMAGEN)
+    # Las capturas de consola son verticales: se limitan por alto para que
+    # quepan en la pagina en lugar de desbordarla.
+    try:
+        from docx.image.image import Image as ImagenDocx
+
+        medida = ImagenDocx.from_file(str(ruta))
+        proporcion = medida.px_height / medida.px_width
+    except Exception:
+        proporcion = 0.6
+    if proporcion > 1.15:
+        parrafo.add_run().add_picture(str(ruta), height=Cm(19.0))
+    else:
+        parrafo.add_run().add_picture(str(ruta), width=ANCHO_IMAGEN)
     if pie:
         parrafo_pie = documento.add_paragraph()
         parrafo_pie.alignment = WD_ALIGN_PARAGRAPH.CENTER

@@ -94,16 +94,22 @@ El proyecto centraliza esa información en MongoDB, la valida en la capa de apli
 
 Vista implementada en `club_motociclistas/views.py`. Consulta el conteo de las 8 colecciones y los presenta como tarjetas-métrica en `templates/dashboard.html`. Cada tarjeta es un enlace directo al listado correspondiente. La página incluye además un panel informativo sobre la arquitectura (chips de tecnología) y accesos rápidos a cuatro endpoints de la API.
 
-![Panel general del club con los contadores de socios, motos, rodadas, inscripciones, accidentes, mantenimientos, documentos y fotos](docs/capturas/01-home.png)
+![Panel general del club con los contadores de socios, motos, rodadas, inscripciones, accidentes, mantenimientos, documentos y fotos](capturas/01-home.png)
+
+*Figura 1. Panel general del club: las ocho metricas en vivo, cada una enlazada a su listado.*
 
 #### 2.5.2 Socios y documentos (`app socios`)
 
 - **Motociclista:** alta, edición, baja, listado y ficha de detalle. La ficha de detalle muestra, en un solo lugar, las motos del socio, sus documentos y sus inscripciones con las rodadas correspondientes.
 - **DocumentoSocio:** alta, edición, baja, listado y ficha de detalle. El documento se asocia a un socio mediante un selector desplegable.
 
-![Listado de socios del club](docs/capturas/02-socios-lista.png)
+![Listado de socios del club](capturas/02-socios-lista.png)
 
-![Ficha de detalle de un socio con sus motos, documentos e inscripciones](docs/capturas/03-socios-detalle.png)
+*Figura 2. Listado de socios con correo y telefono.*
+
+![Ficha de detalle de un socio con sus motos, documentos e inscripciones](capturas/03-socios-detalle.png)
+
+*Figura 3. Ficha de socio: datos, documentos, motos e inscripciones.*
 
 #### 2.5.3 Flota (`app flota`)
 
@@ -111,9 +117,13 @@ Vista implementada en `club_motociclistas/views.py`. Consulta el conteo de las 8
 - **Mantenimiento:** registro de intervenciones (tipo, descripción, costo, kilometraje, marca de "realizado").
 - **Accidente:** registro de siniestros (descripción, ubicación, gravedad, costo estimado).
 
-![Listado de motos de la flota](docs/capturas/04-flota-lista.png)
+![Listado de motos de la flota](capturas/04-flota-lista.png)
 
-![Ficha de detalle de una moto con mantenimientos, accidentes y dueño](docs/capturas/05-moto-detalle.png)
+*Figura 4. Listado de la flota con placa, marca y dueno.*
+
+![Ficha de detalle de una moto con mantenimientos, accidentes y dueño](capturas/05-moto-detalle.png)
+
+*Figura 5. Ficha de moto: mantenimientos, accidentes y dueno.*
 
 #### 2.5.4 Eventos (`app eventos`)
 
@@ -121,15 +131,21 @@ Vista implementada en `club_motociclistas/views.py`. Consulta el conteo de las 8
 - **Inscripcion:** alta, edición, baja, listado y ficha de detalle, con validación de cupo, de rodada no vencida y de no duplicar socio.
 - **Galeria:** alta, edición, baja y listado de fotografías por rodada.
 
-![Listado de rodadas programadas y finalizadas](docs/capturas/06-eventos-lista.png)
+![Listado de rodadas programadas y finalizadas](capturas/06-eventos-lista.png)
 
-![Ficha de detalle de una rodada con inscripciones, cupo disponible y galería](docs/capturas/07-rodada-detalle.png)
+*Figura 6. Listado de rodadas programadas y finalizadas.*
+
+![Ficha de detalle de una rodada con inscripciones, cupo disponible y galería](capturas/07-rodada-detalle.png)
+
+*Figura 7. Ficha de rodada: inscripciones, cupo disponible y galeria.*
 
 #### 2.5.5 API JSON y esquemas
 
 Índice navegable en `/api/` que lista las 8 colecciones con su esquema asociado y su total de documentos; listado por colección; documento individual por identificador; y publicación de los JSON Schemas.
 
-![Índice de la API JSON con el catálogo de colecciones](docs/capturas/08-api-indice.png)
+![Índice de la API JSON con el catálogo de colecciones](capturas/08-api-indice.png)
+
+*Figura 8. Indice de la API JSON con el catalogo de colecciones.*
 
 ---
 
@@ -186,26 +202,18 @@ El proyecto sigue el patrón **MVC** de Django con vistas por función (FBV). La
 
 ![Arquitectura por capas de la aplicación Django](diagramas/01-arquitectura-capas.png)
 
-*Figura 1. Arquitectura por capas del Club de Motociclistas: de la presentación
+*Figura 9. Arquitectura por capas del Club de Motociclistas: de la presentación
 (plantillas y estáticos) al almacenamiento en MongoDB, pasando por las vistas
 por función, los formularios `ModelForm` y los modelos sin claves foráneas.*
 
-| Capa | Ubicación | Responsabilidad |
-|---|---|---|
-| Presentación | `templates/`, `static/css/estilos.css`, `static/js/app.js` | HTML, CSS y JavaScript; `{% url %}`, `{% block content %}` |
-| Vistas (FBV) | `club_motociclistas/views.py`, `club_motociclistas/api.py`, `socios/views.py`, `flota/views.py`, `eventos/views.py` | Orquestan la petición: validan, guardan, avisan y redirigen |
-| Formularios | `socios/forms.py`, `flota/forms.py`, `eventos/forms.py`, `club_motociclistas/campos.py` | `ModelForm` y campos de referencia entre colecciones |
-| Modelos | `socios/models.py`, `flota/models.py`, `eventos/models.py` | Colecciones de MongoDB; **sin** `ForeignKey` (referencias por `ObjectId` en texto) |
-| Infraestructura | `nucleo/`, `club_motociclistas/settings.py`, `club_motociclistas/referencias.py` | Esquemas JSON, serializadores, templatetags y comandos de gestión |
-| Datos | MongoDB (Atlas) | `socios_motociclista`, `socios_documentosocio`, `flota_moto`, `flota_mantenimiento`, `flota_accidente`, `eventos_rodada`, `eventos_inscripcion`, `eventos_galeria` |
 
 ### 4.2 Flujo de una petición (ejemplo: crear una moto)
 
 ![Flujo de una petición HTTP desde el navegador hasta MongoDB](diagramas/02-flujo-peticion.png)
 
-*Figura 2. Recorrido de una petición: navegador -> middleware -> resolución de
-URL -> vista -> formulario -> ORM (`django-mongodb-backend` + `pymongo`) ->
-MongoDB -> respuesta 302 (éxito) o 200 con el error de negocio bajo el campo.*
+*Figura 10. Recorrido completo de la petición, paso a paso: navegador, middleware,
+resolución de URL, vista con el código real de `crear_moto`, ORM y las dos
+respuestas posibles (302 al listado o 200 con el error de negocio bajo el campo).*
 
 ```
 Navegador
@@ -238,7 +246,7 @@ Navegador
 
 ![Diagrama de aplicaciones y dependencias entre paquetes](diagramas/10-apps-dependencias.png)
 
-*Figura 3. Dependencias entre paquetes: `club_motociclistas` (configuración)
+*Figura 11. Dependencias entre paquetes: `club_motociclistas` (configuración)
 importa de `nucleo`, `socios`, `flota` y `eventos`; `nucleo` no importa modelos
 a nivel de módulo (usa `apps.get_model` en tiempo de ejecución) y ninguna app
 depende de otra en sus `models.py`.*
@@ -247,16 +255,17 @@ depende de otra en sus `models.py`.*
 
 - `club_motociclistas` (configuración) importa de `socios`, `flota`, `eventos` y `nucleo`.
 - `nucleo` **no importa modelos al nivel de módulo**: usa `apps.get_model(...)` en tiempo de ejecución (`nucleo/serializadores.py::modelo_de`) para evitar ciclos de importación.
-- `socios` **no importa** `flota` ni `eventos` en `models.py`; la dependencia existe únicamente en `socios/views.py` (para comprobar dependencias al eliminar un socio) y en `socios/forms.py` (para el selector de socios).
+- `socios` **no importa** `flota` ni `eventos` en `models.py`; la dependencia existe únicamente en `socios/forms.py` (para el selector de socios).
 - `flota/views.py` importa `socios.models.Motociclista` para el selector de dueño y el nombre del propietario.
-- `eventos/views.py` importa `flota.models.Moto` (referencia en los mensajes de error) y `socios.models.Motociclista`.
+- `eventos/views.py` importa `socios.models.Motociclista`.
 - `club_motociclistas/referencias.py` centraliza la resolución de referencias: **las importaciones de modelos se hacen dentro de las funciones**, de forma deliberada, para que ninguna app dependa de otra en el nivel de módulo.
+- `club_motociclistas/cascada.py` calcula el borrado en cascada: **las importaciones de modelos se hacen dentro de las funciones**, igual que en `referencias.py`, para no acoplar las apps.
 
 ### 4.4 Arquitectura de contenedores y contexto de ejecución
 
 ![Arquitectura del contenedor: build multi-etapa, imagen final y MongoDB Atlas](diagramas/03-arquitectura-docker.png)
 
-*Figura 4. Construcción y ejecución: la etapa *builder* crea el entorno virtual
+*Figura 12. Construcción y ejecución: la etapa *builder* crea el entorno virtual
 y los estáticos, la etapa *final* produce una imagen sin privilegios con
 `entrypoint.sh` y Gunicorn, y la aplicacion se conecta por TLS a MongoDB Atlas.*
 
@@ -285,7 +294,7 @@ y los estáticos, la etapa *final* produce una imagen sin privilegios con
 
 ![Topologia de despliegue: navegador, contenedor Docker y MongoDB Atlas](diagramas/11-despliegue.png)
 
-*Figura 5. Topología de despliegue: el navegador accede al puerto 8000 del
+*Figura 13. Topología de despliegue: el navegador accede al puerto 8000 del
 host, el contenedor `club-motociclistas-web` sirve la aplicacion y se conecta
 con MongoDB Atlas a traves de TLS.*
 
@@ -295,134 +304,10 @@ En el archivo de producción (`docker-compose.prod.yml`) el mismo esquema se apl
 
 ![Estructura de carpetas del proyecto](diagramas/08-estructura-proyecto.png)
 
-*Figura 6. Visión general de la estructura: el paquete de configuración en la
+*Figura 14. Visión general de la estructura: el paquete de configuración en la
 raíz, las tres apps de dominio, el núcleo auxiliar, las plantillas y los
 estáticos.*
 
-```text
-club-motociclistas/
-├── .dockerignore                     Contexto de build de Docker (excluye secretos y artefactos)
-├── .env.example                      Plantilla de variables de entorno
-├── .gitignore                        Reglas de exclusión de Git
-├── Dockerfile                        Imagen multi-etapa (builder + final no-root)
-├── docker-compose.yml                Orquestación de desarrollo (web; Mongo local opcional con perfil mongo-local)
-├── docker-compose.prod.yml           Orquestación de producción (DEBUG=False)
-├── entrypoint.sh                     Punto de entrada del contenedor
-├── manage.py                         Utilidad de línea de comandos de Django
-├── README.md                         Guía rápida de instalación y uso
-├── requirements.txt                  Dependencias de Python
-│
-├── club_motociclistas/              Paquete de configuración del proyecto
-│   ├── __init__.py
-│   ├── api.py                        API JSON de solo lectura
-│   ├── asgi.py                       Punto de entrada ASGI
-│   ├── campos.py                     Campos de formulario para referencias sin relación
-│   ├── referencias.py                Resolución centralizada de referencias entre documentos
-│   ├── settings.py                   Configuración (lee .env, define MongoDB)
-│   ├── urls.py                       URLconf raíz
-│   ├── views.py                      Vista del dashboard
-│   └── wsgi.py                       Punto de entrada WSGI
-│
-├── eventos/                          App: salidas grupales y participación
-│   ├── __init__.py
-│   ├── apps.py
-│   ├── forms.py
-│   ├── models.py                     Rodada, Inscripcion, Galeria
-│   ├── urls.py
-│   ├── views.py
-│   └── templates/eventos/
-│       ├── galeria_confirm_delete.html
-│       ├── galeria_detail.html
-│       ├── galeria_form.html
-│       ├── galeria_list.html
-│       ├── inscripcion_confirm_delete.html
-│       ├── inscripcion_detail.html
-│       ├── inscripcion_form.html
-│       ├── inscripcion_list.html
-│       ├── rodada_confirm_delete.html
-│       ├── rodada_detail.html
-│       ├── rodada_form.html
-│       └── rodada_list.html
-│
-├── flota/                            App: motos y su cuidado
-│   ├── __init__.py
-│   ├── apps.py
-│   ├── forms.py
-│   ├── models.py                     Moto, Mantenimiento, Accidente
-│   ├── urls.py
-│   ├── views.py
-│   └── templates/flota/
-│       ├── accidente_confirm_delete.html
-│       ├── accidente_detail.html
-│       ├── accidente_form.html
-│       ├── accidente_list.html
-│       ├── mantenimiento_confirm_delete.html
-│       ├── mantenimiento_detail.html
-│       ├── mantenimiento_form.html
-│       ├── mantenimiento_list.html
-│       ├── moto_confirm_delete.html
-│       ├── moto_detail.html
-│       ├── moto_form.html
-│       └── moto_list.html
-│
-├── nucleo/                           App auxiliar: esquemas, serialización y utilidades
-│   ├── __init__.py
-│   ├── apps.py
-│   ├── esquemas.py                   Carga y validación de JSON Schemas
-│   ├── serializadores.py             Conversión modelo Django -> documento de esquema
-│   ├── management/
-│   │   ├── __init__.py
-│   │   └── commands/
-│   │       ├── __init__.py
-│   │       ├── exportar_datos.py     Exporta colecciones a JSON validado
-│   │       ├── seed_data.py          Poblado con datos de prueba coherentes
-│   │       └── validar_esquemas.py   Valida los documentos contra su esquema
-│   └── templatetags/
-│       ├── __init__.py
-│       └── club.py                   Filtros de plantilla propios del club
-│
-├── schemas/                          JSON Schemas (Draft 2020-12)
-│   ├── accidente.schema.json
-│   ├── base.schema.json              Definiciones comunes ($defs)
-│   ├── documento_socio.schema.json
-│   ├── galeria.schema.json
-│   ├── inscripcion.schema.json
-│   ├── mantenimiento.schema.json
-│   ├── moto.schema.json
-│   ├── motociclista.schema.json
-│   └── rodada.schema.json
-│
-├── socios/                           App: miembros del club
-│   ├── __init__.py
-│   ├── apps.py
-│   ├── forms.py
-│   ├── models.py                     Motociclista, DocumentoSocio
-│   ├── urls.py
-│   ├── views.py
-│   └── templates/socios/
-│       ├── documento_confirm_delete.html
-│       ├── documento_detail.html
-│       ├── documento_form.html
-│       ├── documento_list.html
-│       ├── motociclista_confirm_delete.html
-│       ├── motociclista_detail.html
-│       ├── motociclista_form.html
-│       └── motociclista_list.html
-│
-├── static/                           Archivos estáticos
-│   ├── css/estilos.css
-│   ├── img/favicon.svg
-│   └── js/app.js
-│
-├── templates/                        Plantillas globales
-│   ├── base.html                     Layout común: menú, migas, mensajes, {% block content %}
-│   ├── dashboard.html                Panel general con contadores
-│   └── includes/formulario.html      Render común de formularios ModelForm
-│
-└── docs/                             Documentación del proyecto
-    ├── DOCUMENTACION.md              Este documento
-    └── capturas/                     Capturas de pantalla de la aplicación
-```
 
 > **Nota:** el directorio `venv/` (entorno virtual local) y `.git/` no se versionan y se excluyen del árbol por legibilidad.
 
@@ -435,59 +320,59 @@ de prueba cargados (`python manage.py seed_data --flush`) sobre MongoDB Atlas.
 
 ![Panel principal del club](capturas/01-home.png)
 
-*Figura 7. Home: resumen con los ocho contadores del club y accesos rápidos.*
+*Figura 15. Home: resumen con los ocho contadores del club y accesos rápidos.*
 
 ![Listado de socios](capturas/02-socios-lista.png)
 
-*Figura 8. Socios → Motociclistas: listado con correo y teléfono de cada socio.*
+*Figura 16. Socios → Motociclistas: listado con correo y teléfono de cada socio.*
 
 ![Detalle de un socio](capturas/03-socios-detalle.png)
 
-*Figura 9. Ficha de socio: datos personales, documentos y motos registradas.*
+*Figura 17. Ficha de socio: datos personales, documentos y motos registradas.*
 
 ![Listado de documentos de socios](capturas/09-documentos-lista.png)
 
-*Figura 10. Socios → Documentos: cédula, licencia, SOAT y tecnomecánica.*
+*Figura 18. Socios → Documentos: cédula, licencia, SOAT y tecnomecánica.*
 
 ![Formulario de alta de socio](capturas/13-formulario-socio.png)
 
-*Figura 11. Formulario de alta: `ModelForm` con validación por campo.*
+*Figura 19. Formulario de alta: `ModelForm` con validación por campo.*
 
 ![Listado de la flota](capturas/04-flota-lista.png)
 
-*Figura 12. Flota → Motos: listado de motos con placa, marca y dueño.*
+*Figura 20. Flota → Motos: listado de motos con placa, marca y dueño.*
 
 ![Detalle de una moto](capturas/05-moto-detalle.png)
 
-*Figura 13. Ficha de moto: mantenimientos y accidentes asociados.*
+*Figura 21. Ficha de moto: mantenimientos y accidentes asociados.*
 
 ![Listado de mantenimientos](capturas/10-mantenimientos-lista.png)
 
-*Figura 14. Flota → Mantenimientos: historial de intervenciones por moto.*
+*Figura 22. Flota → Mantenimientos: historial de intervenciones por moto.*
 
 ![Listado de accidentes](capturas/14-accidentes-lista.png)
 
-*Figura 15. Flota → Accidentes: siniestros registrados con su gravedad.*
+*Figura 23. Flota → Accidentes: siniestros registrados con su gravedad.*
 
 ![Listado de rodadas](capturas/06-eventos-lista.png)
 
-*Figura 16. Eventos → Rodadas: calendario de salidas grupales del club.*
+*Figura 24. Eventos → Rodadas: calendario de salidas grupales del club.*
 
 ![Detalle de una rodada](capturas/07-rodada-detalle.png)
 
-*Figura 17. Ficha de rodada: control de aforo, inscripciones y fotografías.*
+*Figura 25. Ficha de rodada: control de aforo, inscripciones y fotografías.*
 
 ![Listado de inscripciones](capturas/11-inscripciones-lista.png)
 
-*Figura 18. Eventos → Inscripciones: socios inscritos en cada rodada.*
+*Figura 26. Eventos → Inscripciones: socios inscritos en cada rodada.*
 
 ![Listado de la galería](capturas/12-galeria-lista.png)
 
-*Figura 19. Eventos → Galería: fotografías por rodada con su autor.*
+*Figura 27. Eventos → Galería: fotografías por rodada con su autor.*
 
 ![Índice de la API JSON](capturas/08-api-indice.png)
 
-*Figura 20. API interna: índice de colecciones, documentos y esquemas.*
+*Figura 28. API interna: índice de colecciones, documentos y esquemas.*
 
 ## 5. Modelo de datos
 
@@ -642,7 +527,7 @@ de prueba cargados (`python manage.py seed_data --flush`) sobre MongoDB Atlas.
 
 ![Relaciones entre las ocho colecciones de MongoDB](diagramas/04-modelo-datos.png)
 
-*Figura 7. Relaciones entre colecciones. Cada socio referencia sus documentos
+*Figura 29. Relaciones entre colecciones. Cada socio referencia sus documentos
 y motos; cada moto, sus mantenimientos y accidentes; cada rodada, sus
 inscripciones y fotografías. Las referencias se guardan como `ObjectId` en
 texto, no como `ForeignKey`.*
@@ -698,13 +583,13 @@ Definiciones comunes en `schemas/base.schema.json` (`$defs`): `objectId`, `fecha
 | 1 | El correo del socio debe ser único | Motociclista | `unique=True` en el modelo + `ModelForm.validate_unique()` (consulta a MongoDB) | Error de campo estándar de Django ("Motociclista with this Correo already exists.") |
 | 2 | El socio debe ser mayor de 18 años | Motociclista | `socios/views.py::validar_motociclista` (cálculo de edad con `date.today()`) | "Debe ser mayor de 18 anos" |
 | 3 | La fecha de vencimiento debe ser posterior a la de emisión | DocumentoSocio | `socios/views.py::validar_documento` | "La fecha de vencimiento debe ser mayor a la de emision" |
-| 4 | No se puede eliminar un documento vigente | DocumentoSocio | `socios/views.py::eliminar_documento` (`fechaVencimiento >= date.today()`) | "No se puede eliminar un documento vigente." |
-| 5 | No se puede eliminar un socio con motos, documentos o inscripciones | Motociclista | `socios/views.py::eliminar_motociclista` (`referencias.existe_referencia`) | "No se puede eliminar: tiene motos, inscripciones o documentos asociados." |
+| 4 | Un documento vigente se puede eliminar, pero se advierte antes de confirmar | DocumentoSocio | `club_motociclistas/cascada.py::_plan_documento` (`fechaVencimiento >= date.today()`) | Aviso en la pantalla de confirmación: "Este documento sigue vigente hasta el DD/MM/AAAA; al eliminarlo el socio quedara sin esa acreditacion." |
+| 5 | Un socio se elimina en cascada: sus motos (con sus mantenimientos y accidentes), sus documentos y sus inscripciones | Motociclista | `club_motociclistas/cascada.py::_plan_motociclista` + `cascada.aplicar(plan)` | "Motociclista eliminado correctamente. Tambien se eliminaron N registros asociados en cascada (...)." |
 | 6 | La placa de la moto debe ser única | Moto | `unique=True` en el modelo + validación del formulario | Error de campo estándar de Django |
 | 7 | El año de la moto debe estar entre 1990 y 2026 | Moto | `flota/views.py::validar_moto` | "El anio debe estar entre 1990 y 2026" |
 | 8 | La cilindrada debe estar entre 50 y 2500 cc (si se informa) | Moto | `flota/views.py::validar_moto` | "La cilindrada debe estar entre 50 y 2500" |
 | 9 | Máximo 3 motos por socio | Moto | `flota/views.py::validar_moto` (cuenta `referencias.motos_de(...)`, excluyendo la instancia en edición) | "El motociclista ya tiene 3 motos (maximo)" |
-| 10 | No se puede eliminar una moto con mantenimientos o accidentes | Moto | `flota/views.py::eliminar_moto` | "No se puede eliminar: tiene mantenimientos o accidentes registrados." |
+| 10 | Una moto se elimina en cascada: sus mantenimientos y sus accidentes | Moto | `club_motociclistas/cascada.py::_plan_moto` + `cascada.aplicar(plan)` | "Moto eliminada correctamente. Tambien se eliminaron N registros asociados en cascada (...)." |
 | 11 | La fecha del mantenimiento no puede ser futura | Mantenimiento | `flota/views.py::validar_mantenimiento` (`timezone.now()`) | "La fecha no puede ser futura" |
 | 12 | El kilometraje no puede ser negativo | Mantenimiento | `flota/views.py::validar_mantenimiento` | "El kilometraje no puede ser negativo" |
 | 13 | El costo del mantenimiento no puede ser negativo | Mantenimiento | `flota/views.py::validar_mantenimiento` | "El costo no puede ser negativo" |
@@ -714,7 +599,7 @@ Definiciones comunes en `schemas/base.schema.json` (`$defs`): `objectId`, `fecha
 | 17 | El cupo de la rodada debe estar entre 2 y 80 | Rodada | `eventos/views.py::validar_rodada` | "El cupo debe estar entre 2 y 80" |
 | 18 | La distancia debe estar entre 1 y 2000 km (si se informa) | Rodada | `eventos/views.py::validar_rodada` | "La distancia debe estar entre 1 y 2000 km" |
 | 19 | El costo de la rodada no puede ser negativo (si se informa) | Rodada | `eventos/views.py::validar_rodada` | "El costo no puede ser negativo" |
-| 20 | No se puede eliminar una rodada con inscripciones o fotos | Rodada | `eventos/views.py::eliminar_rodada` | "No se puede eliminar: tiene inscripciones o fotos." |
+| 20 | Una rodada se elimina en cascada: sus inscripciones y sus fotos de galería | Rodada | `club_motociclistas/cascada.py::_plan_rodada` + `cascada.aplicar(plan)` | "Rodada eliminada correctamente. Tambien se eliminaron N registros asociados en cascada (...)." |
 | 21 | No se puede inscribir a una rodada que ya pasó | Inscripcion | `eventos/views.py::validar_inscripcion` | "La rodada ya paso" |
 | 22 | La rodada seleccionada debe existir | Inscripcion | `eventos/views.py::validar_inscripcion` | "La rodada seleccionada no existe" |
 | 23 | No se puede superar el cupo de la rodada | Inscripcion | `eventos/views.py::validar_inscripcion` (cuenta de inscritos, excluyendo la instancia en edición) | "El cupo de la rodada ya esta lleno" |
@@ -729,17 +614,19 @@ Definiciones comunes en `schemas/base.schema.json` (`$defs`): `objectId`, `fecha
 - **La regla 23 (cupo) también es consciente del modo edición.** La inscripción en edición se excluye del conteo antes de comparar con `cupoMaximo`.
 - **El campo `activo` no dispara ninguna regla automática.** Un socio inactivo (`activo=False`) puede tener motos, documentos e inscripciones; la marca es informativa.
 - **La galería no tiene reglas de negocio adicionales.** No existe una función `validar_galeria`; el único control es la validación del formulario (`urlFoto` obligatorio y con formato http/https) y la validación contra el JSON Schema.
-- **Las eliminaciones de mantenimientos, accidentes, inscripciones y fotografías no tienen bloqueos.** Se borran directamente; la protección aplica a los cuatro objetos "padre" (socio, moto, rodada, documento).
+- **Ninguna regla bloquea el borrado.** Ningún registro tiene bloqueos: todo se puede eliminar. Las reglas 4, 5, 10 y 20 se convirtió en *advertencias* que se muestran en la pantalla de confirmación.
+- **La eliminación en cascada se calcula en `club_motociclistas/cascada.py`.** `cascada.plan_para(clave, objeto)` devuelve un `Plan` con los grupos de documentos dependientes (sin tocar la base de datos) y `cascada.aplicar(plan)` los borra en orden: primero los hijos y después el padre. El orden es: mantenimientos y accidentes → motos → documentos e inscripciones → socio; mantenimientos y accidentes → moto; inscripciones y fotos → rodada.
+- **La pantalla de confirmación muestra el detalle del borrado.** La plantilla compartida `templates/includes/cascada.html` lista, grupo por grupo, cada documento que va a desaparecer; el botón pasa a "Si, eliminar en cascada (N)" y el `data-confirmar` del formulario repite el detalle en el diálogo del navegador.
 
 ### 6.3 Restricciones a nivel de base de datos
 
 Los archivos `schemas/*.json` definen, con JSON Schema 2020-12, las reglas 1 a 24 (rangos de `anio`, `cilindrada`, `cupoMaximo`, `distanciaKm`, `minimum` en costos y kilometrajes, `enum` de `gravedad` y `estado`, campos `required`, etc.). El comando `python manage.py validar_esquemas` las aplica a los documentos existentes en MongoDB.
 ![Reglas de integridad referencial al eliminar socios, motos y rodadas](diagramas/05-integridad-borrado.png)
 
-*Figura 8. Integridad referencial: los objetos "padre" (socio, moto, rodada y
-documento) bloquean su eliminación si tienen dependientes; los hijos
-(mantenimientos, accidentes, inscripciones y fotografías) se borran sin
-restriccion.*
+*Figura 30. Integridad referencial: al eliminar un objeto "padre" (socio, moto o
+rodada) sus dependientes se borran en cascada, previa advertencia en la
+pantalla de confirmación; los hijos (mantenimientos, accidentes, inscripciones
+y fotografías) se pueden borrar por separado.*
 
 > **Nota:** los esquemas corresponden a las colecciones que usa el ORM (§5.1). Para replicar estas restricciones **en el servidor** con validadores `$jsonSchema` hay que alinear los nombres de colección o generar y aplicar las migraciones de Django, que crean los índices únicos (`correo`, `placa`) en las colecciones reales.
 
@@ -773,12 +660,12 @@ restriccion.*
 | `/socios/motociclistas/crear/` | `motociclista_create` | `crear_motociclista` | Formulario de alta de socio. |
 | `/socios/motociclistas/<pk>/` | `motociclista_detail` | `ver_motociclista` | Ficha del socio con motos, documentos e inscripciones. |
 | `/socios/motociclistas/<pk>/editar/` | `motociclista_update` | `editar_motociclista` | Formulario de edición de socio. |
-| `/socios/motociclistas/<pk>/eliminar/` | `motociclista_delete` | `eliminar_motociclista` | Confirmación y borrado de socio. |
+| `/socios/motociclistas/<pk>/eliminar/` | `motociclista_delete` | `eliminar_motociclista` | Confirmación y borrado de socio en cascada (motos, documentos e inscripciones). |
 | `/socios/documentos/` | `documento_list` | `lista_documentos` | Listado de documentos (ordenado por fecha de emisión descendente). |
 | `/socios/documentos/crear/` | `documento_create` | `crear_documento` | Formulario de alta de documento. |
 | `/socios/documentos/<pk>/` | `documento_detail` | `ver_documento` | Ficha del documento y su socio. |
 | `/socios/documentos/<pk>/editar/` | `documento_update` | `editar_documento` | Formulario de edición de documento. |
-| `/socios/documentos/<pk>/eliminar/` | `documento_delete` | `eliminar_documento` | Confirmación y borrado de documento. |
+| `/socios/documentos/<pk>/eliminar/` | `documento_delete` | `eliminar_documento` | Confirmación y borrado de documento (advierte si sigue vigente). |
 
 ### 7.3 Rutas de `flota` (prefijo `/flota/`)
 
@@ -788,7 +675,7 @@ restriccion.*
 | `/flota/motos/crear/` | `moto_create` | `crear_moto` | Formulario de alta de moto. |
 | `/flota/motos/<pk>/` | `moto_detail` | `ver_moto` | Ficha de la moto con mantenimientos, accidentes y dueño. |
 | `/flota/motos/<pk>/editar/` | `moto_update` | `editar_moto` | Formulario de edición de moto. |
-| `/flota/motos/<pk>/eliminar/` | `moto_delete` | `eliminar_moto` | Confirmación y borrado de moto. |
+| `/flota/motos/<pk>/eliminar/` | `moto_delete` | `eliminar_moto` | Confirmación y borrado de moto en cascada (mantenimientos y accidentes). |
 | `/flota/mantenimientos/` | `mantenimiento_list` | `lista_mantenimientos` | Listado de mantenimientos (fecha descendente). |
 | `/flota/mantenimientos/crear/` | `mantenimiento_create` | `crear_mantenimiento` | Formulario de alta de mantenimiento. |
 | `/flota/mantenimientos/<pk>/` | `mantenimiento_detail` | `ver_mantenimiento` | Ficha del mantenimiento y su moto. |
@@ -808,7 +695,7 @@ restriccion.*
 | `/eventos/rodadas/crear/` | `rodada_create` | `crear_rodada` | Formulario de alta de rodada. |
 | `/eventos/rodadas/<pk>/` | `rodada_detail` | `ver_rodada` | Ficha de la rodada con inscripciones, cupo disponible y galería. |
 | `/eventos/rodadas/<pk>/editar/` | `rodada_update` | `editar_rodada` | Formulario de edición de rodada. |
-| `/eventos/rodadas/<pk>/eliminar/` | `rodada_delete` | `eliminar_rodada` | Confirmación y borrado de rodada. |
+| `/eventos/rodadas/<pk>/eliminar/` | `rodada_delete` | `eliminar_rodada` | Confirmación y borrado de rodada en cascada (inscripciones y fotos). |
 | `/eventos/inscripciones/` | `inscripcion_list` | `lista_inscripciones` | Listado de inscripciones (fecha de inscripción descendente). |
 | `/eventos/inscripciones/crear/` | `inscripcion_create` | `crear_inscripcion` | Formulario de alta de inscripción. |
 | `/eventos/inscripciones/<pk>/` | `inscripcion_detail` | `ver_inscripcion` | Ficha de la inscripción, el socio y la rodada. |
@@ -844,7 +731,7 @@ templates/<app>/<modelo>_detail.html          Ficha de detalle
 templates/<app>/<modelo>_confirm_delete.html  Confirmación de borrado
 ```
 
-Todas heredan de `templates/base.html` y escriben dentro de `{% block content %}`. Los formularios usan la parcial `templates/includes/formulario.html`, que recorre los campos del `ModelForm` y dibuja los errores junto a cada campo.
+Todas heredan de `templates/base.html` y escriben dentro de `{% block content %}`. Los formularios usan la parcial `templates/includes/formulario.html`, que recorre los campos del `ModelForm` y dibuja los errores junto a cada campo. Las cuatro pantallas de confirmación de socio, documento, moto y rodada incluyen la parcial `templates/includes/cascada.html`, que lista los registros que se borrarán en cascada.
 
 ---
 
@@ -1634,7 +1521,7 @@ Los cambios de esta entrega están organizados en commits independientes y atóm
 
 | # | Alcance | Archivos principales | Descripción |
 |---|---|---|---|
-| 1 | Núcleo de la aplicación | `club_motociclistas/api.py`, `campos.py`, `referencias.py`, `settings.py`, `urls.py`, `nucleo/**`, `schemas/**` | API JSON de solo lectura, resolución centralizada de referencias, campos de formulario con referencias sin relación, app `nucleo` con esquemas/serializadores/comandos y los 9 JSON Schemas. |
+| 1 | Núcleo de la aplicación | `club_motociclistas/api.py`, `campos.py`, `cascada.py`, `referencias.py`, `settings.py`, `urls.py`, `nucleo/**`, `schemas/**` | API JSON de solo lectura, resolución centralizada de referencias, eliminación en cascada entre documentos, campos de formulario con referencias sin relación, app `nucleo` con esquemas/serializadores/comandos y los 9 JSON Schemas. |
 | 2 | Ajustes de dominio y validaciones | `socios/**`, `flota/**`, `eventos/**` | Modelos, formularios, vistas y plantillas de las tres apps de dominio, con las reglas de negocio y las vistas de detalle. |
 | 3 | Interfaz y estáticos | `templates/base.html`, `templates/dashboard.html`, `templates/includes/formulario.html`, `static/**` | Plantilla base única, panel general, render común de formularios, hoja de estilos y JavaScript de la aplicación. |
 | 4 | Empaquetado y despliegue | `Dockerfile`, `.dockerignore`, `docker-compose.yml`, `docker-compose.prod.yml`, `entrypoint.sh` | Imagen multi-etapa sin privilegios, orquestación de desarrollo y producción, punto de entrada con espera a MongoDB y healthchecks. |
@@ -1731,7 +1618,7 @@ Thumbs.db
 
 | Área | Situación actual | Recomendación |
 |---|---|---|
-| **Pruebas automatizadas** | No existe el directorio `tests/` ni pruebas unitarias o de integración. | Crear `tests/` con `pytest` + `pytest-django` (o el runner nativo). Prioridad alta: probar las 26 reglas de negocio con casos de límite (18 años exactos, 3 motos, cupo lleno, fecha futura) y las vistas de borrado bloqueado. |
+| **Pruebas automatizadas** | No existe el directorio `tests/` ni pruebas unitarias o de integración. | Crear `tests/` con `pytest` + `pytest-django` (o el runner nativo). Prioridad alta: probar las 26 reglas de negocio con casos de límite (18 años exactos, 3 motos, cupo lleno, fecha futura) y la eliminacion en cascada (que no queden registros huerfanos). |
 | **Integración continua (CI)** | No hay workflows de GitHub Actions. | Añadir `.github/workflows/ci.yml` que ejecute `pip install -r requirements.txt`, `python manage.py check` y `python manage.py test` en cada PR. |
 | **Autenticación y autorización** | No implementado; la aplicación y la API son abiertas. | Incorporar `django.contrib.auth` y un middleware de sesión. En la API, añadir al menos HTTP Basic o un token. Prioridad **crítica** antes de exponer el servicio en Internet. |
 | **Subida real de archivos** | Las fotos y los documentos se referencian por URL; no hay carga binaria. | Implementar `MEDIA_ROOT` + almacenamiento (local o S3) y cambiar los `URLField` por `FileField`/`ImageField` con `ImageField` para validar el formato. |
@@ -1763,7 +1650,7 @@ Thumbs.db
 | **Socio** | Miembro registrado del club. Se modela como `socios.Motociclista`. Cada socio puede registrar como máximo 3 motos y debe ser mayor de 18 años. |
 | **Motociclista** | Sinónimo de socio. Nombre de la clase de modelo (`socios.Motociclista`) y nombre de la colección en la API (`motociclistas`). |
 | **Documento de socio** | Documento legal o administrativo asociado a un socio (`socios.DocumentoSocio`): cédula, licencia de conducción, SOAT, tecnomecánica. Se identifica por tipo, número, fecha de emisión y fecha de vencimiento. |
-| **Documento vigente** | Documento cuya `fechaVencimiento` es igual o posterior a la fecha actual. Los documentos vigentes **no se pueden eliminar** desde la interfaz. |
+| **Documento vigente** | Documento cuya `fechaVencimiento` es igual o posterior a la fecha actual. Se puede eliminar, pero la pantalla de confirmación advierte que el socio quedará sin esa acreditación. |
 | **Flota** | Conjunto de motos registradas en el club, con su historial de mantenimiento y sus accidentes (`app flota`). |
 | **Moto** | Unidad que pertenece a un socio (`flota.Moto`), identificada de forma única por su `placa`. |
 | **Mantenimiento** | Intervención técnica registrada sobre una moto (`flota.Mantenimiento`): tipo, descripción, costo, kilometraje y marca de "realizado". |
@@ -1819,6 +1706,7 @@ Thumbs.db
 | `club_motociclistas/api.py` | API JSON de solo lectura (5 endpoints). |
 | `club_motociclistas/campos.py` | `ReferenciaModelChoiceField` y `campo_referencia()` para los campos de referencia sin relación. |
 | `club_motociclistas/referencias.py` | Resolución de referencias: `por_id`, `mapa_por_id`, `ids_de`, `nombre_de`, `contar`, `existe_referencia` y los accesores por entidad. |
+| `club_motociclistas/cascada.py` | Eliminación en cascada: clases `Grupo` y `Plan`, `plan_para(clave, objeto)`, `aplicar(plan)` y los planes por entidad (`_plan_motociclista`, `_plan_moto`, `_plan_rodada`, `_plan_documento`). |
 | `club_motociclistas/wsgi.py` | Punto de entrada WSGI (destino de Gunicorn). |
 | `club_motociclistas/asgi.py` | Punto de entrada ASGI. |
 
@@ -1873,6 +1761,7 @@ Thumbs.db
 | `templates/base.html` | Layout común: menú lateral con `{% url %}`, migas, mensajes, `{% block content %}`, pie. |
 | `templates/dashboard.html` | Panel general con los 8 contadores y accesos rápidos. |
 | `templates/includes/formulario.html` | Render común de los formularios `ModelForm`. |
+| `templates/includes/cascada.html` | Advertencia de eliminación en cascada: lista los registros que se borrarán junto al padre. |
 | `socios/templates/socios/*.html` | 8 plantillas (2 modelos × 4). |
 | `flota/templates/flota/*.html` | 12 plantillas (3 modelos × 4). |
 | `eventos/templates/eventos/*.html` | 12 plantillas (3 modelos × 4). |

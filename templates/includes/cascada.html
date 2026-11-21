@@ -25,7 +25,7 @@ Uso: {% include "includes/cascada.html" with plan=plan %}
         {% if grupo.elementos %}
         <li class="cascada__grupo">
             <span class="cascada__titulo">
-                {{ grupo.cantidad }} {{ grupo.etiqueta }}{% if grupo.detalle %}<span class="cascada__detalle">{{ grupo.detalle }}</span>{% endif %}
+                {{ grupo.cantidad }} {{ grupo.nombre }}{% if grupo.detalle %}<span class="cascada__detalle">{{ grupo.detalle }}</span>{% endif %}
             </span>
             <ul class="cascada__elementos">
                 {% for linea in grupo.lineas %}

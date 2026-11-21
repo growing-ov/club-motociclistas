@@ -41,7 +41,14 @@ git clone https://github.com/growing-ov/club-motociclistas.git
 cd club-motociclistas
 ```
 
-4. Configurar el autor de los commits (solo la primera vez):
+```powershell
+git config --global user.name "Octavio Velasco"
+git config --global user.email "octavio.velasco@club-moto.co"
+```
+
+![Consola con la clonación del repositorio y el primer commit](consolas/clonar.png)
+
+*Figura 2. Clonar el repositorio y comprobar el historial con `git log`.*
 
 ```powershell
 git config --global user.name "Octavio Velasco"
@@ -57,6 +64,12 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 ```
+
+El `venv/` queda fuera del repositorio porque ya está en el `.gitignore`.
+
+![Consola con la creación del entorno virtual y la instalación de dependencias](consolas/venv.png)
+
+*Figura 3. Entorno virtual creado y dependencias instaladas (`pip install -r requirements.txt`).*
 
 El `venv/` queda fuera del repositorio porque ya está en el `.gitignore`.
 
@@ -77,6 +90,10 @@ Comprobación:
 ```powershell
 python manage.py check
 ```
+
+![Consola con la creación del proyecto Django](consolas/startproject.png)
+
+*Figura 4. `startproject` genera el paquete `club_motociclistas/` y `manage.py`.*
 
 ---
 
@@ -145,7 +162,7 @@ plantillas. En `settings.py` se registran en `INSTALLED_APPS`.
 
 ![Estructura de carpetas del proyecto Django](diagramas/08-estructura-proyecto.png)
 
-*Figura 2. Estructura final: un paquete de configuración, tres apps de dominio
+*Figura 5. Estructura final: un paquete de configuración, tres apps de dominio
 (`socios`, `flota`, `eventos`), el núcleo auxiliar (`nucleo`) y las carpetas de
 plantillas y estáticos.*
 
@@ -174,6 +191,10 @@ Comprobación del enrutado:
 python manage.py show_urls
 ```
 
+![Consola con la creación de las cuatro aplicaciones](consolas/startapp.png)
+
+*Figura 6. Las cuatro aplicaciones quedan creadas dentro del proyecto.*
+
 ---
 
 ## 8. Paso 7 — Migraciones y servidor de desarrollo
@@ -189,9 +210,13 @@ migraciones de Django, y los datos viven en las colecciones.
 
 La aplicación queda disponible en <http://127.0.0.1:8000/>.
 
+![Consola con las migraciones de Django](consolas/migraciones.png)
+
+*Figura 7. `makemigrations` y `migrate`: en MongoDB son un no-op para el esquema.*
+
 ![Panel principal de la aplicación con los contadores del club](capturas/01-home.png)
 
-*Figura 3. Home del Club de Motociclistas: resumen con los ocho contadores del club.*
+*Figura 8. Home del Club de Motociclistas: resumen con los ocho contadores del club.*
 
 ---
 
@@ -210,6 +235,14 @@ Comprobar que los datos cumplen los esquemas JSON del proyecto:
 python manage.py validar_esquemas
 ```
 
+![Consola con la carga de los datos de prueba](consolas/seed.png)
+
+*Figura 9. `seed_data --flush` deja el club con socios, motos, rodadas y galería.*
+
+![Consola con la validación de los esquemas JSON](consolas/esquemas.png)
+
+*Figura 10. Los 97 documentos creados cumplen los JSON Schemas de `schemas/`.*
+
 ---
 
 ## 10. Paso 9 — Probar la aplicación
@@ -222,34 +255,34 @@ python manage.py validar_esquemas
 
 ![Formulario de alta de socio](capturas/13-formulario-socio.png)
 
-*Figura 4. Formulario de alta: un `ModelForm` con los campos del modelo y los
+*Figura 11. Formulario de alta: un `ModelForm` con los campos del modelo y los
 errores de validación mostrados junto al campo.*
 
 ![Listado de socios del club](capturas/02-socios-lista.png)
 
-*Figura 5. Listado de socios: la tabla se dibuja con los datos leídos de MongoDB.*
+*Figura 12. Listado de socios: la tabla se dibuja con los datos leídos de MongoDB.*
 
 ![Ficha de detalle de un socio](capturas/03-socios-detalle.png)
 
-*Figura 6. Ficha de detalle: documentos y motos del socio, con enlaces a cada ficha.*
+*Figura 13. Ficha de detalle: documentos y motos del socio, con enlaces a cada ficha.*
 
 ### 10.2 Recorrer el resto de módulos
 
 ![Listado de motos de la flota](capturas/04-flota-lista.png)
 
-*Figura 7. Módulo de flota: motos, mantenimientos y accidentes.*
+*Figura 14. Módulo de flota: motos, mantenimientos y accidentes.*
 
 ![Detalle de una moto con su historial](capturas/05-moto-detalle.png)
 
-*Figura 8. Ficha de moto con los mantenimientos registrados.*
+*Figura 15. Ficha de moto con los mantenimientos registrados.*
 
 ![Listado de rodadas y eventos](capturas/06-eventos-lista.png)
 
-*Figura 9. Módulo de eventos: rodadas, inscripciones y galería de fotos.*
+*Figura 16. Módulo de eventos: rodadas, inscripciones y galería de fotos.*
 
 ![Detalle de una rodada con sus inscripciones](capturas/07-rodada-detalle.png)
 
-*Figura 10. Ficha de rodada: control de aforo y fotografías asociadas.*
+*Figura 17. Ficha de rodada: control de aforo y fotografías asociadas.*
 
 ### 10.3 Consultar la API interna
 
@@ -259,7 +292,7 @@ Invoke-WebRequest http://127.0.0.1:8000/api/esquemas/ | Select-Object StatusCode
 
 ![Índice de la API JSON del proyecto](capturas/08-api-indice.png)
 
-*Figura 11. API interna: índice, colecciones, documentos y esquemas en JSON.*
+*Figura 18. API interna: índice, colecciones, documentos y esquemas en JSON.*
 
 ---
 
@@ -290,7 +323,7 @@ CMD ["gunicorn", "club_motociclistas.wsgi:application", "--bind", "0.0.0.0:8000"
 
 ![Proceso de construcción de la imagen y arranque del contenedor](diagramas/06-pipeline-docker.png)
 
-*Figura 12. Del código fuente a la aplicación servida: build de la imagen, arranque
+*Figura 19. Del código fuente a la aplicación servida: build de la imagen, arranque
 del contenedor, healthcheck y Gunicorn.*
 
 ```powershell
@@ -300,6 +333,10 @@ docker compose ps
 ```
 
 El `docker-compose.yml` toma la configuración del archivo `.env`:
+
+![Consola con el contenedor en marcha y sus logs](consolas/docker.png)
+
+*Figura 20. `docker compose up -d --build` levanta el contenedor y el healthcheck pasa a `healthy`.*
 
 ```yaml
 environment:
@@ -326,6 +363,10 @@ git add .
 git commit -m "feat(app): proyecto inicial del Club de Motociclistas"
 git push origin main
 ```
+
+![Consola con la publicación en GitHub](consolas/git.png)
+
+*Figura 21. `git add`, `git commit` y `git push` con la rama `main` al día.*
 
 Antes de publicar hay que comprobar que **no** se\subieron credenciales:
 

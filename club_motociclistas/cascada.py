@@ -49,6 +49,10 @@ class Grupo:
         """Cuantos documentos contiene el grupo."""
         return len(self.elementos)
 
+    def nombre(self):
+        """Como se nombra el grupo segun la cantidad: ``1 moto`` / ``2 motos``."""
+        return self.singular if self.cantidad == 1 else self.etiqueta
+
     def lineas(self):
         """Descripcion corta de cada documento del grupo."""
         if self.describir is None:
@@ -80,7 +84,7 @@ class Plan:
     def resumen(self):
         """Texto corto con el detalle: ``"2 motos, 1 inscripcion"``."""
         partes = [
-            f"{grupo.cantidad} {grupo.etiqueta}"
+            f"{grupo.cantidad} {grupo.nombre()}"
             for grupo in self.grupos
             if grupo.cantidad
         ]
