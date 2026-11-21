@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/galeria.schema.json",
+  "title": "Foto de galeria",
+  "description": "Foto de la galeria de una rodada. La referencia a la rodada es plana (ObjectId en texto).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "idRodada", "titulo", "urlFoto", "fechaSubida"],
+  "properties": {
+    "id": { "$ref": "base.schema.json#/$defs/objectId" },
+    "idRodada": { "$ref": "base.schema.json#/$defs/objectId" },
+    "titulo": { "type": "string", "minLength": 1, "maxLength": 150 },
+    "descripcion": { "$ref": "base.schema.json#/$defs/texto" },
+    "urlFoto": { "$ref": "base.schema.json#/$defs/url" },
+    "fechaSubida": { "$ref": "base.schema.json#/$defs/fechaHora" }
+  }
+}

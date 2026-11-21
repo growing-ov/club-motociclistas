@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/inscripcion.schema.json",
+  "title": "Inscripcion",
+  "description": "Inscripcion de un socio a una rodada. Ambas referencias son planas (ObjectId en texto).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "idMotociclista", "idRodada", "fechaInscripcion", "asistio"],
+  "properties": {
+    "id": { "$ref": "base.schema.json#/$defs/objectId" },
+    "idMotociclista": { "$ref": "base.schema.json#/$defs/objectId" },
+    "idRodada": { "$ref": "base.schema.json#/$defs/objectId" },
+    "fechaInscripcion": { "$ref": "base.schema.json#/$defs/fechaHora" },
+    "asistio": { "type": "boolean" },
+    "observaciones": { "$ref": "base.schema.json#/$defs/texto" }
+  }
+}

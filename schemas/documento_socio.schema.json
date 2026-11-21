@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/documento_socio.schema.json",
+  "title": "Documento de socio",
+  "description": "Documento que pertenece a un socio. La referencia al socio es plana (ObjectId en texto), no una relacion de base de datos.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "nombreDocumento", "numeroDocumento", "fechaEmision", "fechaVencimiento", "idMotociclista"],
+  "properties": {
+    "id": { "$ref": "base.schema.json#/$defs/objectId" },
+    "nombreDocumento": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "numeroDocumento": { "type": "string", "minLength": 1, "maxLength": 60 },
+    "fechaEmision": { "$ref": "base.schema.json#/$defs/fecha" },
+    "fechaVencimiento": { "$ref": "base.schema.json#/$defs/fecha" },
+    "archivoUrl": {
+      "anyOf": [{ "$ref": "base.schema.json#/$defs/url" }, { "type": "null" }]
+    },
+    "idMotociclista": { "$ref": "base.schema.json#/$defs/objectId" }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/base.schema.json",
+  "title": "Definiciones comunes del Club de Motociclistas",
+  "description": "Tipos reutilizados por los esquemas de cada coleccion. El proyecto no usa relaciones en la base de datos: los campos de referencia guardan el ObjectId del documento apuntado en texto plano.",
+  "$defs": {
+    "objectId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{24}$",
+      "description": "Identificador ObjectId de MongoDB serializado como texto hexadecimal."
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Fecha en formato ISO 8601 (AAAA-MM-DD)."
+    },
+    "fechaHora": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora en formato ISO 8601 con zona horaria."
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https?://.+",
+      "maxLength": 500,
+      "description": "Direccion web http o https."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "maxLength": 254
+    },
+    "telefono": {
+      "type": ["string", "null"],
+      "maxLength": 20
+    },
+    "dinero": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "texto": {
+      "type": ["string", "null"]
+    }
+  }
+}

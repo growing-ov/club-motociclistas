@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/moto.schema.json",
+  "title": "Moto",
+  "description": "Moto del parque de un socio. La referencia al dueno es plana (ObjectId en texto).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "placa", "marca", "modelo", "anio", "tipoMoto", "idMotociclista"],
+  "properties": {
+    "id": { "$ref": "base.schema.json#/$defs/objectId" },
+    "placa": { "type": "string", "minLength": 1, "maxLength": 10 },
+    "marca": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "modelo": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "anio": { "type": "integer", "minimum": 1990, "maximum": 2026 },
+    "tipoMoto": { "type": "string", "minLength": 1, "maxLength": 50 },
+    "cilindrada": { "type": ["integer", "null"], "minimum": 50, "maximum": 2500 },
+    "color": { "type": ["string", "null"], "maxLength": 40 },
+    "fotoUrl": {
+      "anyOf": [{ "$ref": "base.schema.json#/$defs/url" }, { "type": "null" }]
+    },
+    "idMotociclista": { "$ref": "base.schema.json#/$defs/objectId" }
+  }
+}

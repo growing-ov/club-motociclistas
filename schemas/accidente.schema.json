@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/accidente.schema.json",
+  "title": "Accidente",
+  "description": "Accidente registrado sobre una moto. La referencia a la moto es plana (ObjectId en texto).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "idMoto", "fecha", "descripcion", "ubicacion", "gravedad"],
+  "properties": {
+    "id": { "$ref": "base.schema.json#/$defs/objectId" },
+    "idMoto": { "$ref": "base.schema.json#/$defs/objectId" },
+    "fecha": { "$ref": "base.schema.json#/$defs/fechaHora" },
+    "descripcion": { "type": "string" },
+    "ubicacion": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "gravedad": { "type": "string", "enum": ["leve", "moderado", "grave"] },
+    "costoEstimado": { "$ref": "base.schema.json#/$defs/dinero" }
+  }
+}

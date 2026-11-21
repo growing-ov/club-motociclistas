@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/rodada.schema.json",
+  "title": "Rodada",
+  "description": "Salida grupal programada. No tiene relaciones: las inscripciones y las fotos la referencian por ObjectId.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "nombre", "fechaSalida", "puntoEncuentro", "destino", "estado", "cupoMaximo"],
+  "properties": {
+    "id": { "$ref": "base.schema.json#/$defs/objectId" },
+    "nombre": { "type": "string", "minLength": 1, "maxLength": 150 },
+    "fechaSalida": { "$ref": "base.schema.json#/$defs/fechaHora" },
+    "puntoEncuentro": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "destino": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "estado": { "type": "string", "enum": ["programada", "en_curso", "finalizada"] },
+    "cupoMaximo": { "type": "integer", "minimum": 2, "maximum": 80 },
+    "distanciaKm": { "type": ["integer", "null"], "minimum": 1, "maximum": 2000 },
+    "costo": { "$ref": "base.schema.json#/$defs/dinero" }
+  }
+}

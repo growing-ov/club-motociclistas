@@ -5,6 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def leer_variables():
+    """Lee el archivo ``.env`` y lo mezcla con las variables del sistema."""
     valores = {}
     archivo = BASE_DIR / ".env"
     if archivo.exists():
@@ -31,6 +32,7 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.messages",
+    "nucleo.apps.NucleoConfig",
     "socios.apps.SociosConfig",
     "flota.apps.FlotaConfig",
     "eventos.apps.EventosConfig",
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -81,3 +84,10 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/mantenimiento.schema.json",
+  "title": "Mantenimiento",
+  "description": "Mantenimiento realizado sobre una moto. La referencia a la moto es plana (ObjectId en texto).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "idMoto", "fecha", "tipo", "descripcion", "costo", "kilometraje", "realizado"],
+  "properties": {
+    "id": { "$ref": "base.schema.json#/$defs/objectId" },
+    "idMoto": { "$ref": "base.schema.json#/$defs/objectId" },
+    "fecha": { "$ref": "base.schema.json#/$defs/fechaHora" },
+    "tipo": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "descripcion": { "type": "string" },
+    "costo": { "type": "number", "minimum": 0 },
+    "kilometraje": { "type": "integer", "minimum": 0 },
+    "realizado": { "type": "boolean" }
+  }
+}

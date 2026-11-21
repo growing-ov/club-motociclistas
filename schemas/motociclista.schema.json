@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://club-motociclistas.local/schemas/motociclista.schema.json",
+  "title": "Motociclista",
+  "description": "Socio del club. No tiene relaciones: es la raiz de la que cuelgan motos, documentos e inscripciones por ObjectId.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "nombre", "apellido", "correo", "fechaNacimiento", "activo"],
+  "properties": {
+    "id": { "$ref": "base.schema.json#/$defs/objectId" },
+    "nombre": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "apellido": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "correo": { "$ref": "base.schema.json#/$defs/email" },
+    "telefono": { "$ref": "base.schema.json#/$defs/telefono" },
+    "fechaNacimiento": { "$ref": "base.schema.json#/$defs/fecha" },
+    "activo": { "type": "boolean" },
+    "tipoLicencia": {
+      "type": ["string", "null"],
+      "maxLength": 50,
+      "examples": ["A1", "A2"]
+    },
+    "fotoUrl": {
+      "anyOf": [{ "$ref": "base.schema.json#/$defs/url" }, { "type": "null" }]
+    }
+  }
+}
