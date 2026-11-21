@@ -1,0 +1,38 @@
+# ---------------------------------------------------------------------------
+# Normalizacion de fines de linea: LF en todos los sistemas.
+# Sin esto, en Windows (core.autocrlf=true) el entrypoint.sh se guardaria con
+# CRLF y el contenedor arrancaria con "/bin/sh\r: no such file or directory".
+# ---------------------------------------------------------------------------
+
+* text=auto eol=lf
+
+# Scripts y archivos de Docker
+*.sh text eol=lf
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+
+# Configuracion
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+*.env text eol=lf
+.env.example text eol=lf
+
+# Codigo
+*.py text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+
+# Documentacion
+*.md text eol=lf
+
+# Binarios: nunca se tocan
+*.docx binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.ico binary

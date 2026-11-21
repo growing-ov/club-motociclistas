@@ -1,9 +1,16 @@
 # ---------------------------------------------------------------------------
 # Entorno de desarrollo con Docker Compose.
-# Uso:  docker compose up --build
-# El archivo .env es opcional: Compose lo carga para interpolar ${...} y, si
-# no existe, se usan los valores por defecto de este archivo.
-# MONGO_URI / MONGO_DB se fuerzan al servicio "mongo" de la red interna.
+# Uso:  copy .env.example .env   (define MONGO_URI con tu URI de Atlas)
+#       docker compose up --build
+#
+# La base de datos es MongoDB Atlas (servicio externo): MONGO_URI es
+# obligatorio y sale de .env. Si no esta definido, Compose aborta con un
+# mensaje explicito en lugar de arrancar contra una base vacia.
+#
+# El servicio "mongo" es opcional (perfil "mongo-local") y solo se usa si
+# quieres un MongoDB efimero para pruebas:
+#   docker compose --profile mongo-local up --build
+#   MONGO_URI=mongodb://mongo:27017
 # ---------------------------------------------------------------------------
 name: club-motociclistas
 
@@ -16,23 +23,20 @@ services:
     container_name: club-motociclistas-web
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${PUERTO_WEB:-8000}:8000"
     env_file:
       # Opcional: si existe, aporta SECRET_KEY, DEBUG, ALLOWED_HOSTS, etc.
       - path: .env
         required: false
     environment:
-      # Conexion interna al servicio de Mongo (nunca "localhost" del host).
-      MONGO_URI: mongodb://mongo:27017
+      # Conexion a MongoDB Atlas. Obligatoria: define MONGO_URI en .env.
+      MONGO_URI: ${MONGO_URI:?define MONGO_URI (MongoDB Atlas) en el archivo .env}
       MONGO_DB: ${MONGO_DB:-club_motociclistas}
       DEBUG: ${DEBUG:-True}
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
       SECRET_KEY: ${SECRET_KEY:-django-insecure-cambia-esta-clave-en-produccion}
       DJANGO_SETTINGS_MODULE: club_motociclistas.settings
-      ESPERA_MONGO: "60"
-    depends_on:
-      mongo:
-        condition: service_healthy
+      ESPERA_MONGO: ${ESPERA_MONGO:-60}
     volumes:
       # Persistencia de archivos subidos. OJO: settings.py no define
       # MEDIA_ROOT, hay que anadir MEDIA_ROOT="/app/media" para usar esto.
@@ -44,9 +48,11 @@ services:
       retries: 3
       start_period: 20s
 
+  # MongoDB local opcional, solo para pruebas. No se levanta por defecto.
   mongo:
     image: mongo:7
     container_name: club-motociclistas-mongo
+    profiles: ["mongo-local"]
     restart: unless-stopped
     ports:
       - "27017:27017"

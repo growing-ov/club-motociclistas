@@ -5,6 +5,10 @@
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 # Diferencias: DEBUG=False, 2 workers, collectstatic ya hecho en el build
 # (SKIP_COLLECTSTATIC=1), reinicio automatico y SECRET_KEY obligatorio.
+#
+# La base de datos es MongoDB Atlas: MONGO_URI y SECRET_KEY son obligatorias
+# y se toman de .env. El servicio "mongo" local es opcional (perfil
+# "mongo-local") y no se levanta por defecto.
 # ---------------------------------------------------------------------------
 name: club-motociclistas
 
@@ -22,19 +26,17 @@ services:
       - path: .env
         required: false
     environment:
-      MONGO_URI: mongodb://mongo:27017
+      # Conexion a MongoDB Atlas. Obligatoria: define MONGO_URI en .env.
+      MONGO_URI: ${MONGO_URI:?define MONGO_URI (MongoDB Atlas) en el archivo .env}
       MONGO_DB: ${MONGO_DB:-club_motociclistas}
       DEBUG: "False"
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1}
       # Obligatoria en produccion: defina SECRET_KEY en .env o en el entorno.
       SECRET_KEY: ${SECRET_KEY:?define SECRET_KEY en .env para produccion}
       DJANGO_SETTINGS_MODULE: club_motociclistas.settings
-      ESPERA_MONGO: "60"
+      ESPERA_MONGO: ${ESPERA_MONGO:-60}
       # collectstatic ya se ejecuto en la etapa builder del build.
       SKIP_COLLECTSTATIC: "1"
-    depends_on:
-      mongo:
-        condition: service_healthy
     command:
       - gunicorn
       - club_motociclistas.wsgi:application
@@ -55,9 +57,11 @@ services:
       retries: 3
       start_period: 20s
 
+  # MongoDB local opcional, solo para pruebas. No se levanta por defecto.
   mongo:
     image: mongo:7
     container_name: club-motociclistas-mongo
+    profiles: ["mongo-local"]
     restart: unless-stopped
     ports:
       - "27017:27017"

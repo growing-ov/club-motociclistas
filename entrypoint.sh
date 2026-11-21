@@ -6,17 +6,72 @@
 #   gunicorn club_motociclistas.wsgi:application --bind 0.0.0.0:8000 ...
 # Variables opcionales: MONGO_URI, MONGO_DB, ESPERA_MONGO (segundos, 0=sin
 # espera), SKIP_COLLECTSTATIC (1 = omitir collectstatic).
+#
+# MONGO_URI admite cualquier servidor: el contenedor "mongo" de Docker Compose,
+# un Mongo local o MongoDB Atlas (mongodb+srv://). Si apunta a localhost, se
+# reescribe al host "mongo" de la red de Compose, porque dentro del contenedor
+# localhost es el propio servicio web.
 # ---------------------------------------------------------------------------
 set -e
 
 MONGO_URI="${MONGO_URI:-mongodb://mongo:27017}"
 ESPERA_MONGO="${ESPERA_MONGO:-60}"
+export MONGO_URI
 
-echo "[entrypoint] Mongo: ${MONGO_URI} | Base: ${MONGO_DB:-club_motociclistas}"
+# 0) Reescribe localhost/127.0.0.1 al servicio "mongo" de Compose.
+case "$MONGO_URI" in
+    *://localhost*|*://127.0.0.1*)
+        MONGO_URI=$(printf '%s' "$MONGO_URI" | sed 's|//localhost|//mongo|; s|//127\.0\.0\.1|//mongo|')
+        export MONGO_URI
+        echo "[entrypoint] MONGO_URI apuntaba a localhost: se usa el servicio 'mongo' de Compose."
+        ;;
+esac
 
-# Comprueba que el puerto de MongoDB acepta conexiones.
+# Muestra solo el host, nunca la contrasena de la URI.
+MONGO_HOST=$(python - <<'PY' 2>/dev/null || echo "desconocido"
+import os
+from urllib.parse import urlparse
+
+print(urlparse(os.environ.get("MONGO_URI", "")).hostname or "desconocido")
+PY
+)
+echo "[entrypoint] Mongo: ${MONGO_HOST} | Base: ${MONGO_DB:-club_motociclistas}"
+
+# Comprueba que MongoDB responde: ping con pymongo (soporta mongodb+srv) y,
+# si falla, comprueba el puerto TCP como respaldo.
 mongo_listo() {
-    python -c "import os,socket,sys;from urllib.parse import urlparse;u=urlparse(os.environ.get('MONGO_URI','mongodb://mongo:27017'));s=socket.socket();s.settimeout(2);s.connect((u.hostname or 'mongo',u.port or 27017))" >/dev/null 2>&1
+    python - <<'PY' >/dev/null 2>&1
+import os
+import sys
+
+uri = os.environ.get("MONGO_URI", "mongodb://mongo:27017")
+
+try:
+    import pymongo
+
+    cliente = pymongo.MongoClient(
+        uri, serverSelectionTimeoutMS=3000, connectTimeoutMS=3000
+    )
+    cliente.admin.command("ping")
+    sys.exit(0)
+except Exception:
+    pass
+
+try:
+    from urllib.parse import urlparse
+    import socket
+
+    partes = urlparse(uri)
+    host = partes.hostname or "mongo"
+    puerto = partes.port or 27017
+    conexion = socket.socket()
+    conexion.settimeout(2)
+    conexion.connect((host, puerto))
+    conexion.close()
+    sys.exit(0)
+except Exception:
+    sys.exit(1)
+PY
 }
 
 # 1) Esperar a MongoDB (el compose ya usa depends_on: service_healthy).

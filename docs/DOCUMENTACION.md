@@ -353,15 +353,16 @@ Navegador
 |                                  |                                  |
 |  EXPOSE 8000   HEALTHCHECK -> http://127.0.0.1:8000/api/esquemas/ |
 +=====================================================================+
-                                   |
-                                   |  MONGO_URI=mongodb://mongo:27017
-                                   v
+                                    |
+                                    |  MONGO_URI=mongodb+srv://... (Atlas)
+                                    v
 +=====================================================================+
-|  CONTENEDOR: club-motociclistas-mongo   (imagen mongo:7)           |
-|  puerto 27017   volumen mongo_data -> /data/db                     |
-|  HEALTHCHECK: mongosh --eval "db.adminCommand('ping').ok"          |
+|  SERVICIO EXTERNO: MongoDB Atlas                                 |
+|  cluster <-> TLS                                                  |
 +=====================================================================+
 ```
+
+> El contenedor `mongo` (imagen `mongo:7`) sigue existiendo en los archivos Compose, pero bajo el perfil opcional `mongo-local`: no se levanta por defecto y solo se usa para pruebas aisladas.
 
 **Contexto de ejecución (proceso):**
 
@@ -383,25 +384,24 @@ Navegador
         +---------------------------+----------------------------+
         |                    RED DOCKER                            |
         |                                                            |
-        |   +-------------------------+      +-------------------+   |
-        |   |  servicio: web          |      |  servicio: mongo |   |
-        |   |  image: club-motociclistas:dev  |  image: mongo:7 |   |
-        |   |  container: club-motociclistas-web                 |   |
-        |   |                         |      |                   |   |
-        |   |  gunicorn (3 workers)   |      |  mongod           |   |
-        |   |  WhiteNoise             |      |  puerto 27017     |   |
-        |   |  EXPOSE 8000            |      |                   |   |
-        |   |  healthcheck: /api/esquemas/  |  healthcheck: ping|   |
-        |   +------------+-------------+      +---------+---------+   |
-        |                |                              |             |
-        |                |  MONGO_URI=mongodb://mongo:27017         |
-        |                +------------------------------+             |
-        |                                               |             |
-        |              +--------------------------------+            |
-        |              |  volumen: mongo_data  (/data/db) |            |
-        |              |  volumen: media_data  (/app/media)|           |
-        |              +--------------------------------+            |
-        +------------------------------------------------------------+
+        |   +-------------------------+                            |
+        |   |  servicio: web          |                            |
+        |   |  image: club-motociclistas:dev                       |
+        |   |  container: club-motociclistas-web                   |
+        |   |                         |                            |
+        |   |  gunicorn (3 workers)   |                            |
+        |   |  WhiteNoise             |                            |
+        |   |  EXPOSE 8000            |                            |
+        |   |  healthcheck: /api/esquemas/                        |
+        |   |  volumen: media_data (/app/media)                   |
+        |   +------------+-------------+                            |
+        +----------------|--------------------------------------------+
+                         |
+                         |  MONGO_URI (mongodb+srv://...)
+                         v
+              +---------------------------+
+              |   MongoDB Atlas (externo) |
+              +---------------------------+
                                     |
                                     v
                           usuario (navegador)
@@ -417,13 +417,11 @@ club-motociclistas/
 ├── .env.example                      Plantilla de variables de entorno
 ├── .gitignore                        Reglas de exclusión de Git
 ├── Dockerfile                        Imagen multi-etapa (builder + final no-root)
-├── docker-compose.yml                Orquestación de desarrollo (web + mongo)
+├── docker-compose.yml                Orquestación de desarrollo (web; Mongo local opcional con perfil mongo-local)
 ├── docker-compose.prod.yml           Orquestación de producción (DEBUG=False)
 ├── entrypoint.sh                     Punto de entrada del contenedor
 ├── manage.py                         Utilidad de línea de comandos de Django
 ├── README.md                         Guía rápida de instalación y uso
-├── crear_colecciones.txt             Script mongosh con validadores $jsonSchema por colección
-├── descripcion.txt                   Descripción funcional y reglas de negocio en texto plano
 ├── requirements.txt                  Dependencias de Python
 │
 ├── club_motociclistas/              Paquete de configuración del proyecto
@@ -569,7 +567,7 @@ club-motociclistas/
 | `eventos.Inscripcion` | `eventos_inscripcion` |
 | `eventos.Galeria` | `eventos_galeria` |
 
-> **Nota importante:** el script `crear_colecciones.txt` crea las colecciones con nombres en plural (`motociclistas`, `documentos`, `motos`, `mantenimientos`, `accidentes`, `rodadas`, `inscripciones`, `galeria`), que **no coinciden** con los nombres que usa el ORM (`socios_motociclista`, etc.). Si se ejecuta ese script, los validadores de servidor quedan aplicados a colecciones que la aplicación no utiliza. Para que los validadores de MongoDB apliquen a las colecciones reales, es necesario renombrar las colecciones del script o generar las migraciones de Django (ver §8.6).
+> **Nota importante:** los esquemas de `schemas/*.json` están pensados para las colecciones reales del ORM (`socios_motociclista`, `socios_documentosocio`, `flota_moto`, `flota_mantenimiento`, `flota_accidente`, `eventos_rodada`, `eventos_inscripcion`, `eventos_galeria`) y se validan desde el lado de la aplicación con el comando `validar_esquemas`. Si se instalan validadores `$jsonSchema` en el servidor con otros nombres de colección (por ejemplo en plural), quedan aplicados a colecciones que la aplicación no utiliza; para que se apliquen a las reales hay que alinear los nombres o generar las migraciones de Django (ver §8.6).
 
 ### 5.2 `socios.Motociclista` — Socio del club
 
@@ -833,9 +831,9 @@ Definiciones comunes en `schemas/base.schema.json` (`$defs`): `objectId`, `fecha
 
 ### 6.3 Restricciones a nivel de base de datos
 
-El script `crear_colecciones.txt` define validadores `$jsonSchema` del lado del servidor MongoDB que replican las reglas 1 a 24 (rangos de `anio`, `cilindrada`, `cupoMaximo`, `distanciaKm`, `minimum` en costos y kilometrajes, `enum` de `gravedad` y `estado`, campos `required`, etc.).
+Los archivos `schemas/*.json` definen, con JSON Schema 2020-12, las reglas 1 a 24 (rangos de `anio`, `cilindrada`, `cupoMaximo`, `distanciaKm`, `minimum` en costos y kilometrajes, `enum` de `gravedad` y `estado`, campos `required`, etc.). El comando `python manage.py validar_esquemas` las aplica a los documentos existentes en MongoDB.
 
-> **Nota:** como se explica en §5.1, los nombres de colección del script no coinciden con los que usa el ORM. Para que estas restricciones se apliquen en el servidor, hay que alinear los nombres o generar y aplicar las migraciones de Django, que crean los índices únicos (`correo`, `placa`) en las colecciones reales.
+> **Nota:** los esquemas corresponden a las colecciones que usa el ORM (§5.1). Para replicar estas restricciones **en el servidor** con validadores `$jsonSchema` hay que alinear los nombres de colección o generar y aplicar las migraciones de Django, que crean los índices únicos (`correo`, `placa`) en las colecciones reales.
 
 ---
 
@@ -1025,21 +1023,12 @@ cp .env.example .env
 | `SECRET_KEY` | En producción | `django-insecure-club-motociclistas-cambiar-en-produccion` | Clave criptográfica de Django (firmado de cookies y CSRF). **Debe ser fuerte y única en producción.** |
 | `DEBUG` | No | `True` | Modo depuración. Se interpreta como booleano: solo `"true"` (sin distinguir mayúsculas) activa `DEBUG=True`. En producción debe ser `False`. |
 | `ALLOWED_HOSTS` | En producción | `*` | Lista de hosts permitidos separada por comas. En producción, lista explícita (por ejemplo `club.example.com`). |
-| `MONGO_URI` | No | `mongodb://localhost:27017` | Cadena de conexión a MongoDB. Local, `mongodb://localhost:27017`, o Atlas `mongodb+srv://usuario:clave@cluster.mongodb.net/?retryWrites=true&w=majority`. |
+| `MONGO_URI` | No (en Docker: **sí**) | `mongodb://localhost:27017` | Cadena de conexión a MongoDB. Local, `mongodb://localhost:27017`, o Atlas `mongodb+srv://usuario:clave@cluster.mongodb.net/?retryWrites=true&w=majority`. **En Docker es obligatoria**: Compose aborta el arranque si no está definida. |
 | `MONGO_DB` | No | `club_motociclistas` | Nombre de la base de datos dentro del servidor MongoDB. |
+| `PUERTO_WEB` | No | `8000` | Puerto del host donde se publica la aplicación (solo Docker Compose). |
+| `ESPERA_MONGO` | No | `60` | Segundos que el `entrypoint.sh` espera a MongoDB antes de arrancar (solo Docker Compose). `0` desactiva la espera. |
 
-#### Ejemplo completo de `.env` (desarrollo local)
-
-```dotenv
-# Copia este archivo como .env y cambia los valores.
-SECRET_KEY=cambia-esta-clave
-DEBUG=True
-ALLOWED_HOSTS=*
-MONGO_URI=mongodb://localhost:27017
-MONGO_DB=club_motociclistas
-```
-
-#### Ejemplo de `.env` con MongoDB Atlas
+#### Ejemplo de `.env` con MongoDB Atlas (el usado en Docker)
 
 ```dotenv
 SECRET_KEY=una-clave-larga-y-aleatoria-de-al-menos-50-caracteres
@@ -1047,9 +1036,21 @@ DEBUG=False
 ALLOWED_HOSTS=club.example.com
 MONGO_URI=mongodb+srv://usuario:clave@cluster.mongodb.net/?retryWrites=true&w=majority
 MONGO_DB=club_motociclistas
+PUERTO_WEB=8000
+ESPERA_MONGO=60
 ```
 
-> **Nota:** `settings.py::leer_variables()` lee el archivo `.env` y después aplica `os.environ.update()` sobre el resultado. Por lo tanto, **las variables de entorno del sistema tienen prioridad sobre el archivo `.env`**. Esto es lo que permite a Docker Compose sobrescribir `MONGO_URI` con la dirección interna del servicio `mongo`.
+#### Ejemplo de `.env` con MongoDB local (entorno virtual)
+
+```dotenv
+SECRET_KEY=cambia-esta-clave
+DEBUG=True
+ALLOWED_HOSTS=*
+MONGO_URI=mongodb://localhost:27017
+MONGO_DB=club_motociclistas
+```
+
+> **Nota:** `settings.py::leer_variables()` lee el archivo `.env` y después aplica `os.environ.update()` sobre el resultado. Por lo tanto, **las variables de entorno del sistema tienen prioridad sobre el archivo `.env`**. Esto es lo que permite a Docker Compose fijar `MONGO_URI` (y el resto de variables) al contenedor por encima de lo que diga el `.env`.
 
 ### 8.5 Creación de la base de datos y carga de datos
 
@@ -1195,9 +1196,9 @@ pip install -r requirements.txt
    ```
 
 3. **Verifica el `.env`.** `MONGO_URI` debe apuntar a donde realmente está la base:
-   - MongoDB local: `mongodb://localhost:27017`
-   - Dentro de Docker Compose: `mongodb://mongo:27017` (nunca `localhost`, que apunta al propio contenedor).
-   - Atlas: la cadena `mongodb+srv://...` completa.
+   - Atlas (el usado en Docker): la cadena `mongodb+srv://...` completa.
+   - MongoDB local con el entorno virtual: `mongodb://localhost:27017`.
+   - Dentro de Docker Compose con el perfil `mongo-local`: `mongodb://mongo:27017` (nunca `localhost`, que apunta al propio contenedor).
 4. **Comprueba la red y el cortafuegos.** Atlas exige que la IP de salida esté en la lista de acceso del cluster.
 5. **Verifica el nombre de la base.** `MONGO_DB=club_motociclistas`.
 
@@ -1222,7 +1223,7 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 
 #### `ImperativeRoutingMonitor` / `django_mongodb_backend` no encuentra la colección
 
-El backend crea las colecciones de forma implícita al insertar. Si una colección existe con validadores del script `crear_colecciones.txt` y los nombres no coinciden con los del ORM (§5.1), usa el nombre real (`socios_motociclista`, etc.) o alinea el script.
+El backend crea las colecciones de forma implícita al insertar. Si en el servidor existen colecciones con validadores `$jsonSchema` y otros nombres (por ejemplo en plural) que no coinciden con los del ORM (§5.1), usa el nombre real (`socios_motociclista`, etc.) o alinea los validadores.
 
 #### La consola de PowerShell no encuentra `python`
 
@@ -1244,7 +1245,7 @@ python --version
 |---|---|
 | `Dockerfile` | Imagen de producción multi-etapa (`builder` → `final`). |
 | `.dockerignore` | Excluye del contexto de build todo lo que no debe entrar en la imagen. |
-| `docker-compose.yml` | Entorno de desarrollo: servicios `web` + `mongo`. |
+| `docker-compose.yml` | Entorno de desarrollo: servicio `web` (la base de datos es MongoDB Atlas, externa) y `mongo` local opcional bajo el perfil `mongo-local`. |
 | `docker-compose.prod.yml` | Variante de producción: `DEBUG=False`, 2 workers, `SECRET_KEY` obligatoria. |
 | `entrypoint.sh` | Punto de entrada: espera a Mongo, `collectstatic`, `migrate`, `exec "$@"`. |
 
@@ -1264,16 +1265,20 @@ docker build -t club-motociclistas .
 ### 9.3 Ejecución con Docker Compose
 
 ```bash
-# Construir y levantar los servicios en primer plano
+# Construir y levantar el servicio web en primer plano
 docker compose up --build
 ```
 
-| Servicio | Imagen | Puerto en el host | Puerto interno |
-|---|---|---|---|
-| `web` | `club-motociclistas:dev` (construida localmente) | `8000` | `8000` |
-| `mongo` | `mongo:7` | `27017` | `27017` |
+| Servicio | Imagen | Puerto en el host | Puerto interno | Nota |
+|---|---|---|---|---|
+| `web` | `club-motociclistas:dev` (construida localmente) | `8000` (`PUERTO_WEB`) | `8000` | Sempre activo. |
+| `mongo` | `mongo:7` | `27017` | `27017` | Opcional, perfil `mongo-local`; no se levanta por defecto. |
 
-La aplicación queda disponible en <http://localhost:8000> y MongoDB en `localhost:27017`.
+La aplicación queda disponible en <http://localhost:8000> y se conecta a **MongoDB Atlas** con la URI de `.env`. El servicio `mongo` local solo se usa para pruebas:
+
+```bash
+docker compose --profile mongo-local up --build
+```
 
 ```bash
 # Levantar en segundo plano
@@ -1285,7 +1290,7 @@ docker compose ps
 # Detener y eliminar los contenedores (conserva los volúmenes)
 docker compose down
 
-# Detener y eliminar también los volúmenes (¡borra la base de datos!)
+# Detener y eliminar también los volúmenes (¡borra la base de datos local!)
 docker compose down -v
 ```
 
@@ -1293,22 +1298,23 @@ docker compose down -v
 
 | Variable | Servicio | Valor por defecto | Notas |
 |---|---|---|---|
-| `MONGO_URI` | `web` | `mongodb://mongo:27017` | **Forzado** por Compose: nunca debe ser `localhost`. |
+| `MONGO_URI` | `web` | — | **Obligatoria**: `${MONGO_URI:?define MONGO_URI (MongoDB Atlas) en el archivo .env}`. Compose aborta el arranque si no está definida, para no conectar contra una base equivocada. |
 | `MONGO_DB` | `web` | `club_motociclistas` | Interpolado desde el `.env` o valor por defecto. |
 | `DEBUG` | `web` | `True` (dev) / `False` (prod) | El valor de producción está fijado a `"False"`. |
 | `ALLOWED_HOSTS` | `web` | `*` (dev) / `localhost,127.0.0.1` (prod) | Separados por comas. |
 | `SECRET_KEY` | `web` | *(dev)* / **obligatoria** (prod) | En producción: `SECRET_KEY: ${SECRET_KEY:?define SECRET_KEY en .env para produccion}`; Compose **aborta el arranque** si no está definida. |
+| `PUERTO_WEB` | `web` | `8000` | Puerto del host donde se publica la aplicación. |
 | `DJANGO_SETTINGS_MODULE` | `web` | `club_motociclistas.settings` | Requerido por WSGI. |
 | `ESPERA_MONGO` | `web` | `60` | Segundos máximos de espera a MongoDB en el `entrypoint.sh`. `0` desactiva la espera. |
 | `SKIP_COLLECTSTATIC` | `web` | `1` (prod) / `0` (dev) | Omite `collectstatic` en el arranque cuando el manifiesto ya existe en la imagen. |
 
-El archivo `.env` se carga opcionalmente en ambos Compose mediante `env_file` con `required: false`, de modo que el proyecto puede levantarse sin él en desarrollo.
+El archivo `.env` se carga opcionalmente en ambos Compose mediante `env_file` con `required: false`, y además lo usa Compose para interpolar `${...}`. Como `settings.py::leer_variables()` aplica `os.environ.update()` sobre los valores del archivo, **las variables del sistema tienen prioridad sobre el `.env`**: por eso Compose puede fijar `MONGO_URI` aunque el `.env` tenga otra dirección.
 
 ### 9.5 Volúmenes
 
 | Volumen | Contenedor | Ruta | Contenido |
 |---|---|---|---|
-| `mongo_data` | `mongo` | `/data/db` | Datos de MongoDB (sobreviven a `docker compose down`). |
+| `mongo_data` | `mongo` (perfil `mongo-local`) | `/data/db` | Datos del MongoDB local opcional (sobreviven a `docker compose down`). Atlas es externo y no usa volúmenes. |
 | `media_data` | `web` | `/app/media` | Reservado para archivos subidos. |
 
 > **Nota:** `settings.py` **no define `MEDIA_ROOT`** ni existe carga de archivos en la aplicación (todas las fotos y documentos se referencian por URL). El volumen `media_data` está preparado, pero para usarlo habría que añadir `MEDIA_ROOT = "/app/media"` y `MEDIA_URL = "/media/"` a la configuración.
@@ -1318,11 +1324,11 @@ El archivo `.env` se carga opcionalmente en ambos Compose mediante `env_file` co
 | Servicio | Prueba | Intervalo | Timeout | Reintentos | Inicio |
 |---|---|---|---|---|---|
 | `web` | `urllib.request.urlopen('http://127.0.0.1:8000/api/esquemas/')` → HTTP 200 | 30 s | 5 s | 3 | 20 s |
-| `mongo` | `mongosh --quiet --eval "db.adminCommand('ping').ok"` | 10 s | 5 s | 5 | 20 s |
+| `mongo` (perfil `mongo-local`) | `mongosh --quiet --eval "db.adminCommand('ping').ok"` | 10 s | 5 s | 5 | 20 s |
 
 El `web` consulta **`/api/esquemas/`** de forma intencionada: ese endpoint solo lee archivos del disco y **no depende de MongoDB**, de modo que un fallo de base de datos no se confunde con un fallo de la aplicación.
 
-Además, `depends_on: mongo: condition: service_healthy` garantiza que `web` no arranque hasta que MongoDB responde.
+Como la base de datos es Atlas (servicio externo), `web` **no depende** del servicio `mongo`: la espera la resuelve el propio `entrypoint.sh`, que hace `ping` a MongoDB con `pymongo` (compatible con `mongodb+srv://`) antes de lanzar Gunicorn, con un máximo de `ESPERA_MONGO` segundos.
 
 ### 9.7 Comandos de depuración
 
@@ -1330,7 +1336,7 @@ Además, `depends_on: mongo: condition: service_healthy` garantiza que `web` no 
 # Seguir los logs del servicio web en tiempo real
 docker compose logs -f web
 
-# Logs de MongoDB
+# Logs de MongoDB (solo con el perfil mongo-local)
 docker compose logs -f mongo
 
 # Últimas 100 líneas
@@ -1342,9 +1348,12 @@ docker compose exec web python manage.py check
 docker compose exec web python manage.py validar_esquemas
 docker compose exec web python manage.py shell
 
-# Entrar en la consola de MongoDB
+# Entrar en la consola de MongoDB (perfil mongo-local)
 docker compose exec mongo mongosh
 docker compose exec mongo mongosh --eval "db.getSiblingDB('club_motociclistas').getCollectionNames()"
+
+# Consultar la base de Atlas desde el contenedor
+docker compose exec web python manage.py shell -c "from socios.models import Motociclista; print(Motociclista.objects.count())"
 
 # Ver el estado de salud
 docker compose ps
@@ -1354,27 +1363,41 @@ docker inspect --format='{{json .State.Health}}' club-motociclistas-web
 docker compose build --no-cache web
 ```
 
-### 9.8 Advertencia de entorno sobre Docker Desktop en esta máquina
+### 9.8 Verificación de la imagen y del Compose (realizada)
 
-> **Advertencia:** en el equipo donde se preparó esta documentación, **Docker Desktop no dispone de un engine Linux operativo** (WSL2 no está disponible/habilitado en la máquina). El cliente Docker responde, pero cualquier comando que requiera el daemon falla con:
->
-> ```text
-> docker : request returned 500 Internal Server Error for API route and version
-> http://%2F%2F.%2Fpipe%2FdockerDesktopLinuxEngine/v1.56/version, check if the server supports the requested API version
-> ```
->
-> En consecuencia, **la imagen `club-motociclistas` no pudo construirse ni ejecutarse en este entorno**, y por tanto el `docker compose up --build` no se pudo verificar de extremo a extremo en esta máquina.
->
-> Este hecho es **una limitación del entorno de ejecución, no un defecto del `Dockerfile` ni de los archivos Compose**: el `Dockerfile` está construido como una imagen multi-etapa convencional (builder con `collectstatic`, etapa final sin privilegios con `USER appuser`), y los dos Compose están correctamente formados. La verificación deberá realizarse en un equipo con Docker Desktop funcional (o en Linux/CI con Docker Engine).
->
-> Comprobaciones que deben ejecutarse en un entorno con Docker operativo:
->
-> ```bash
-> docker build -t club-motociclistas .
-> docker compose up --build
-> docker compose ps          # ambos servicios en estado "healthy"
-> curl -i http://localhost:8000/api/esquemas/
-> ```
+La imagen y el Compose se verificaron de extremo a extremo en un entorno con Docker Desktop operativo (Docker 29.4.3, Compose v5.1.3):
+
+```bash
+docker compose build web        # imagen club-motociclistas:dev construida OK
+docker compose up -d --build    # solo el servicio "web" (Atlas es externo)
+docker compose ps               # club-motociclistas-web  Up (healthy)
+```
+
+Comprobaciones realizadas sobre el contenedor en ejecución:
+
+| Comprobación | Resultado |
+|---|---|
+| `docker compose ps` | `club-motociclistas-web` en estado `healthy` |
+| `GET /` , `/socios/` , `/flota/` , `/eventos/` , `/galeria/` , `/api/esquemas/` | HTTP 200 en todas |
+| `/socios/motociclistas/` | Muestra los socios sembrados en Atlas (Velasco, Calderon, Ramirez…) |
+| Logs del `entrypoint.sh` | `[entrypoint] Mongo: cluster0.guj5it4.mongodb.net` → `MongoDB disponible` → `collectstatic` → `migrate` → Gunicorn con 3 workers |
+| Healthcheck interno | `http://127.0.0.1:8000/api/esquemas/` responde 200 |
+
+> El `entrypoint.sh` muestra **solo el host** de la URI (`cluster0.guj5it4.mongodb.net`) y nunca la contraseña completa.
+
+### 9.9 Ejecutar el proyecto en otra máquina
+
+Requisitos: Docker (Desktop en Windows/macOS, Engine en Linux) y un `.env` propio.
+
+```bash
+git clone https://github.com/growing-ov/club-motociclistas.git
+cd club-motociclistas
+cp .env.example .env      # Windows PowerShell: copy .env.example .env
+# Edita .env: MONGO_URI (Atlas), SECRET_KEY y, si procede, DEBUG/ALLOWED_HOSTS
+docker compose up --build
+```
+
+El `.env` **no está versionado** (`.gitignore` y `.dockerignore`), por lo que cada máquina define sus propias credenciales de Atlas. `MONGO_URI` es obligatoria en Docker: si falta, Compose aborta con `define MONGO_URI (MongoDB Atlas) en el archivo .env` en lugar de arrancar contra una base de datos equivocada.
 
 ---
 
@@ -1806,12 +1829,12 @@ Thumbs.db
 | **Subida real de archivos** | Las fotos y los documentos se referencian por URL; no hay carga binaria. | Implementar `MEDIA_ROOT` + almacenamiento (local o S3) y cambiar los `URLField` por `FileField`/`ImageField` con `ImageField` para validar el formato. |
 | **Paginación** | Los listados cargan la colección completa en memoria. | Implementar `Paginator` de Django en las vistas `lista_*`. Relevante si el club crece o si el tráfico de la API crece. |
 | **Búsqueda en servidor** | El filtrado es del lado del cliente (JavaScript). | Añadir un parámetro `?q=` con `icontains` sobre los campos clave. |
-| **Índices en MongoDB** | El repositorio no incluye migraciones; los índices únicos (`correo`, `placa`) no se crean en el servidor. | Generar y versionar `migrations/` (`makemigrations socios flota eventos`) y aplicarlas en el despliegue, o alinear los nombres de colección de `crear_colecciones.txt` con los del ORM (§5.1). |
+| **Índices en MongoDB** | El repositorio no incluye migraciones; los índices únicos (`correo`, `placa`) no se crean en el servidor. | Generar y versionar `migrations/` (`makemigrations socios flota eventos`) y aplicarlas en el despliegue. |
 | **Gestión de secretos** | La URL del remoto Git puede contener un token incrustado. | Rotar el token, configurar el remoto con la URL limpia y usar un gestor de secretos o un gestor de credenciales de Git en producción. |
 | **Observabilidad** | No hay registro estructurado ni métricas. | Añadir `django-environ`/logging a archivo, y considerar `django-prometheus` o un endpoint de métricas. |
 | **Respaldo y recuperación** | El comando `exportar_datos` genera respaldos en JSON, pero no hay política automática. | Programar `mongodump` diario y documentar la restauración (§10.1). |
 | **Paginación y filtros en la API** | La API devuelve colecciones completas sin parámetros. | Añadir `?page=`, `?limit=` y `?campo=valor` manteniendo la validación por esquema. |
-| **Verificación de la imagen Docker** | No se pudo construir en esta máquina por falta de engine Linux (§9.8). | Ejecutar `docker build` y `docker compose up --build` en un entorno con Docker operativo, o añadir la construcción de la imagen al pipeline de CI. |
+| **Verificación de la imagen Docker** | Verificada en esta máquina: `docker compose build web` y `docker compose up -d --build` con el contenedor en estado `healthy` y todas las rutas en HTTP 200 (§9.8). | Mantener la construcción de la imagen en el pipeline de CI para detectar regresiones. |
 | **Localización** | `LANGUAGE_CODE = "es-mx"` está configurado, pero no hay archivos de traducción. | Añadir `locale/` con `makemessages` / `compilemessages` si se requieren las cadenas traducidas del propio Django. |
 
 ### 14.4 Mantenimiento rutinario
@@ -1933,7 +1956,7 @@ Thumbs.db
 | `schemas/rodada.schema.json` | Contrato de la colección `rodadas`. |
 | `schemas/inscripcion.schema.json` | Contrato de la colección `inscripciones`. |
 | `schemas/galeria.schema.json` | Contrato de la colección `galeria`. |
-| `crear_colecciones.txt` | Script `mongosh` con los validadores `$jsonSchema` del lado del servidor. |
+| `nucleo/esquemas.py` | Carga los esquemas de `schemas/` y valida cada documento de MongoDB (`validar_esquemas`). |
 
 ### 16.5 Plantillas y estáticos
 
@@ -1962,7 +1985,6 @@ Thumbs.db
 | `.gitignore` | Exclusiones de Git. |
 | `requirements.txt` | Dependencias de Python. |
 | `README.md` | Guía rápida de instalación y uso. |
-| `descripcion.txt` | Descripción funcional y reglas de negocio en texto plano. |
 | `docs/DOCUMENTACION.md` | Este documento. |
 | `docs/capturas/` | Capturas de pantalla de la aplicación en ejecución. |
 
