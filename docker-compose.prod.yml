@@ -18,7 +18,7 @@ services:
       context: .
       dockerfile: Dockerfile
     image: club-motociclistas:prod
-    container_name: club-motociclistas-web
+    container_name: ${NOMBRE_CONTENEDOR:-club-motociclistas-web}
     restart: unless-stopped
     ports:
       - "${PUERTO_WEB:-8000}:8000"
@@ -60,7 +60,7 @@ services:
   # MongoDB local opcional, solo para pruebas. No se levanta por defecto.
   mongo:
     image: mongo:7
-    container_name: club-motociclistas-mongo
+    container_name: ${NOMBRE_CONTENEDOR:-club-motociclistas-mongo}
     profiles: ["mongo-local"]
     restart: unless-stopped
     ports:
