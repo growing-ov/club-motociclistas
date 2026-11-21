@@ -1,49 +1,90 @@
 {% extends "base.html" %}
+{% load club %}
 
 {% block title %}Mantenimientos{% endblock %}
+{% block migas %}Flota / Mantenimientos{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Mantenimientos</h2>
-    <a class="boton boton-primario" href="{% url 'mantenimiento_create' %}">Nuevo mantenimiento</a>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Mantenimientos</h1>
+        <p class="pagina__descripcion">
+            Historial de intervenciones por moto: cambios de aceite, Revision de frenos,
+            neumaticos y otros trabajos registrados.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--primario" href="{% url 'mantenimiento_create' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Nuevo mantenimiento
+        </a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Moto</th>
-            <th>Descripcion</th>
-            <th>Kilometraje</th>
-            <th>Costo</th>
-            <th>Realizado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for mantenimiento in object_list %}
-        <tr>
-            <td>{{ mantenimiento.fecha|date:"d/m/Y" }}</td>
-            <td>{{ mantenimiento.tipo }}</td>
-            <td>
-                <a href="{% url 'moto_detail' mantenimiento.idMoto.pk %}">
-                    {{ mantenimiento.idMoto }}
-                </a>
-            </td>
-            <td>{{ mantenimiento.descripcion }}</td>
-            <td>{{ mantenimiento.kilometraje }}</td>
-            <td>${{ mantenimiento.costo }}</td>
-            <td>{{ mantenimiento.realizado|yesno:"Si,No" }}</td>
-            <td class="acciones">
-                <a href="{% url 'mantenimiento_detail' mantenimiento.pk %}">Ver</a>
-                <a href="{% url 'mantenimiento_update' mantenimiento.pk %}">Editar</a>
-                <a href="{% url 'mantenimiento_delete' mantenimiento.pk %}">Eliminar</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="8" class="vacio">Sin mantenimientos registrados.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="panel">
+    <div class="panel__cabecera">
+        <span class="panel__titulo">{{ object_list|length }} mantenimiento{% if object_list|length != 1 %}s{% endif %} registrado{% if object_list|length != 1 %}s{% endif %}</span>
+        <input class="buscador" type="search" placeholder="Buscar por tipo o moto..." data-filtro="tabla-mantenimientos" aria-label="Buscar mantenimientos">
+    </div>
+    <div class="panel__cuerpo panel__cuerpo--plano">
+        <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-mantenimientos">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Moto</th>
+                        <th>Kilometraje</th>
+                        <th>Costo</th>
+                        <th>Estado</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for mantenimiento in object_list %}
+                    <tr>
+                        <td class="numeros">{{ mantenimiento.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'mantenimiento_detail' mantenimiento.pk %}">{{ mantenimiento.tipo }}</a>
+                            <span class="tabla__secundario">{{ mantenimiento.descripcion|truncatechars:60 }}</span>
+                        </td>
+                        <td>
+                            {% with moto=motos|get:mantenimiento.idMoto %}
+                                {% if moto %}
+                                    <a href="{% url 'moto_detail' moto.pk %}">{{ moto.marca }} {{ moto.modelo }}</a>
+                                    <span class="tabla__secundario mono">{{ moto.placa }}</span>
+                                {% else %}
+                                    <span class="pastilla pastilla--peligro">Sin moto</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td class="numeros">{{ mantenimiento.kilometraje|floatformat:0 }} km</td>
+                        <td class="numeros">$ {{ mantenimiento.costo|moneda }}</td>
+                        <td>
+                            {% if mantenimiento.realizado %}
+                                <span class="pastilla pastilla--exito">Realizado</span>
+                            {% else %}
+                                <span class="pastilla pastilla--aviso">Pendiente</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="tabla__acciones">
+                                <a class="enlace-accion" href="{% url 'mantenimiento_detail' mantenimiento.pk %}">Ver</a>
+                                <a class="enlace-accion" href="{% url 'mantenimiento_update' mantenimiento.pk %}">Editar</a>
+                                <a class="enlace-accion enlace-accion--peligro" href="{% url 'mantenimiento_delete' mantenimiento.pk %}">Eliminar</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="vacio">
+                        <div class="vacio__icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.6 9.6a2.1 2.1 0 0 1-3-3z"></path></svg></div>
+                        <p class="vacio__titulo">Sin mantenimientos</p>
+                        <p class="vacio__texto">Registra el primer mantenimiento para llevar el control de cada moto.</p>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

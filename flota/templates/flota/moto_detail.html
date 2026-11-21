@@ -1,85 +1,159 @@
 {% extends "base.html" %}
+{% load club %}
 
-{% block title %}Moto {{ object.placa }}{% endblock %}
+{% block title %}{{ object.marca }} {{ object.modelo }}{% endblock %}
+{% block migas %}Flota / Motos / {{ object.placa }}{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>{{ object.marca }} {{ object.modelo }} ({{ object.placa }})</h2>
-    <div>
-        <a class="boton" href="{% url 'moto_update' object.pk %}">Editar</a>
-        <a class="boton boton-peligro" href="{% url 'moto_delete' object.pk %}">Eliminar</a>
-        <a class="boton" href="{% url 'moto_list' %}">Volver</a>
-    </div>
-</div>
-
-<div class="tarjetas">
-    <div class="tarjeta">
-        <h3>Datos de la moto</h3>
-        <p><strong>Marca:</strong> {{ object.marca }}</p>
-        <p><strong>Modelo:</strong> {{ object.modelo }}</p>
-        <p><strong>Anio:</strong> {{ object.anio }}</p>
-        <p><strong>Tipo:</strong> {{ object.tipoMoto }}</p>
-        <p><strong>Cilindrada:</strong> {{ object.cilindrada|default:"-" }}</p>
-        <p><strong>Color:</strong> {{ object.color|default:"-" }}</p>
-        <p>
-            <strong>Dueno:</strong>
-            <a href="{% url 'motociclista_detail' object.idMotociclista.pk %}">
-                {{ object.idMotociclista }}
-            </a>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>{{ object.marca }} {{ object.modelo }}</h1>
+        <p class="pagina__descripcion">
+            Ficha de la moto <span class="mono">{{ object.placa }}</span> con su historial de
+            mantenimiento y accidentes.
         </p>
     </div>
-    <div class="tarjeta">
-        <h3>Foto de la moto</h3>
-        {% if object.fotoUrl %}
-            <img class="grande" src="{{ object.fotoUrl }}" alt="Foto de {{ object.placa }}">
-        {% else %}
-            <p>Sin foto registrada.</p>
-        {% endif %}
+    <div class="pagina__acciones">
+        <a class="boton boton--fantasma" href="{% url 'moto_list' %}">Volver</a>
+        <a class="boton" href="{% url 'moto_update' object.pk %}">Editar</a>
+        <a class="boton boton--peligro" href="{% url 'moto_delete' object.pk %}">Eliminar</a>
     </div>
 </div>
 
-<h3>Mantenimientos</h3>
-<table>
-    <thead>
-        <tr><th>Fecha</th><th>Tipo</th><th>Descripcion</th><th>Kilometraje</th><th>Costo</th><th>Acciones</th></tr>
-    </thead>
-    <tbody>
-    {% for mantenimiento in mantenimientos %}
-        <tr>
-            <td>{{ mantenimiento.fecha|date:"d/m/Y" }}</td>
-            <td>{{ mantenimiento.tipo }}</td>
-            <td>{{ mantenimiento.descripcion }}</td>
-            <td>{{ mantenimiento.kilometraje }}</td>
-            <td>${{ mantenimiento.costo }}</td>
-            <td class="acciones">
-                <a href="{% url 'mantenimiento_detail' mantenimiento.pk %}">Ver</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="6" class="vacio">Esta moto no tiene mantenimientos registrados.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="rejilla rejilla--2 mb-5">
+    <section class="panel">
+        <div class="panel__cabecera"><span class="panel__titulo">Datos de la moto</span></div>
+        <div class="panel__cuerpo">
+            <div class="datos">
+                <div class="datos__fila">
+                    <span class="datos__termino">Placa</span>
+                    <span class="datos__valor mono">{{ object.placa }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Marca</span>
+                    <span class="datos__valor">{{ object.marca }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Modelo</span>
+                    <span class="datos__valor">{{ object.modelo }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Anio</span>
+                    <span class="datos__valor">{{ object.anio }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Tipo</span>
+                    <span class="datos__valor"><span class="pastilla pastilla--neutro">{{ object.tipoMoto }}</span></span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Cilindrada</span>
+                    <span class="datos__valor">{% if object.cilindrada %}{{ object.cilindrada }} cc{% else %}Sin registrar{% endif %}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Color</span>
+                    <span class="datos__valor">{{ object.color|default:"Sin registrar" }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Identificador</span>
+                    <span class="datos__valor mono">{{ object.pk }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<h3>Accidentes</h3>
-<table>
-    <thead>
-        <tr><th>Fecha</th><th>Gravedad</th><th>Ubicacion</th><th>Descripcion</th><th>Acciones</th></tr>
-    </thead>
-    <tbody>
-    {% for accidente in accidentes %}
-        <tr>
-            <td>{{ accidente.fecha|date:"d/m/Y" }}</td>
-            <td>{{ accidente.get_gravedad_display }}</td>
-            <td>{{ accidente.ubicacion }}</td>
-            <td>{{ accidente.descripcion }}</td>
-            <td class="acciones">
-                <a href="{% url 'accidente_detail' accidente.pk %}">Ver</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="5" class="vacio">Esta moto no tiene accidentes registrados.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+    <section class="panel">
+        <div class="panel__cabecera"><span class="panel__titulo">Dueno y foto</span></div>
+        <div class="panel__cuerpo">
+            {% if object.fotoUrl %}
+                <img class="imagen-principal mb-4" src="{{ object.fotoUrl }}" alt="Foto de {{ object.marca }} {{ object.modelo }}">
+            {% endif %}
+            {% if dueno %}
+                <div class="perfil">
+                    {% if dueno.fotoUrl %}
+                        <img class="avatar avatar--grande" src="{{ dueno.fotoUrl }}" alt="Foto de {{ dueno.nombre }}">
+                    {% else %}
+                        <span class="avatar avatar--grande">{{ dueno.nombre|initiales }}</span>
+                    {% endif %}
+                    <div class="perfil__datos">
+                        <p class="perfil__nombre mb-0">{{ dueno.nombre }} {{ dueno.apellido }}</p>
+                        <p class="perfil__correo mb-0">{{ dueno.correo }}</p>
+                        <p class="mt-4 mb-0">
+                            <a class="boton boton--fantasma boton--mini" href="{% url 'motociclista_detail' dueno.pk %}">Ver ficha del socio</a>
+                        </p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="vacio">
+                    <p class="vacio__titulo">Dueno no encontrado</p>
+                    <p class="vacio__texto">La referencia {{ object.idMotociclista }} no apunta a ningun socio.</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<section class="seccion">
+    <h2 class="seccion__titulo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.6 9.6a2.1 2.1 0 0 1-3-3z"></path></svg>
+        Mantenimientos
+    </h2>
+    <div class="panel">
+        <div class="panel__cuerpo panel__cuerpo--plano">
+            <div class="tabla-envoltura">
+                <table class="tabla">
+                    <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripcion</th><th>Km</th><th>Costo</th><th style="text-align:right">Acciones</th></tr></thead>
+                    <tbody>
+                    {% for mantenimiento in mantenimientos %}
+                        <tr>
+                            <td class="numeros">{{ mantenimiento.fecha|date:"d/m/Y" }}</td>
+                            <td class="tabla__principal">{{ mantenimiento.tipo }}</td>
+                            <td>{{ mantenimiento.descripcion|truncatechars:70 }}</td>
+                            <td class="numeros">{{ mantenimiento.kilometraje|floatformat:0 }}</td>
+                            <td class="numeros">$ {{ mantenimiento.costo|moneda }}</td>
+                            <td><div class="tabla__acciones"><a class="enlace-accion" href="{% url 'mantenimiento_detail' mantenimiento.pk %}">Ver</a></div></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="6" class="vacio">
+                            <p class="vacio__titulo">Esta moto no tiene mantenimientos</p>
+                            <p class="vacio__texto">Registra el primer servicio para controlar su historial.</p>
+                        </td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="seccion">
+    <h2 class="seccion__titulo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+        Accidentes
+    </h2>
+    <div class="panel">
+        <div class="panel__cuerpo panel__cuerpo--plano">
+            <div class="tabla-envoltura">
+                <table class="tabla">
+                    <thead><tr><th>Fecha</th><th>Ubicacion</th><th>Gravedad</th><th>Costo estimado</th><th style="text-align:right">Acciones</th></tr></thead>
+                    <tbody>
+                    {% for accidente in accidentes %}
+                        <tr>
+                            <td class="numeros">{{ accidente.fecha|date:"d/m/Y" }}</td>
+                            <td>{{ accidente.ubicacion }}</td>
+                            <td><span class="pastilla {{ accidente.gravedad|gravedad_clase }}">{{ accidente.get_gravedad_display }}</span></td>
+                            <td class="numeros">$ {{ accidente.costoEstimado|moneda }}</td>
+                            <td><div class="tabla__acciones"><a class="enlace-accion" href="{% url 'accidente_detail' accidente.pk %}">Ver</a></div></td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="5" class="vacio">
+                            <p class="vacio__titulo">Sin accidentes registrados</p>
+                            <p class="vacio__texto">Esta moto no tiene accidentes en el registro.</p>
+                        </td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}

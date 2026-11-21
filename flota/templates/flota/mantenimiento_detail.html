@@ -1,28 +1,101 @@
 {% extends "base.html" %}
+{% load club %}
 
-{% block title %}{{ object.tipo }}{% endblock %}
+{% block title %}Mantenimiento {{ object.tipo }}{% endblock %}
+{% block migas %}Flota / Mantenimientos / {{ object.tipo }}{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>{{ object.tipo }}</h2>
-    <div>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>{{ object.tipo }}</h1>
+        <p class="pagina__descripcion">
+            Registro de mantenimiento. La moto se referencia por su <code>ObjectId</code>
+            en texto, sin relacion en la base de datos.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--fantasma" href="{% url 'mantenimiento_list' %}">Volver</a>
         <a class="boton" href="{% url 'mantenimiento_update' object.pk %}">Editar</a>
-        <a class="boton boton-peligro" href="{% url 'mantenimiento_delete' object.pk %}">Eliminar</a>
-        <a class="boton" href="{% url 'mantenimiento_list' %}">Volver</a>
+        <a class="boton boton--peligro" href="{% url 'mantenimiento_delete' object.pk %}">Eliminar</a>
     </div>
 </div>
 
-<div class="tarjeta">
-    <h3>Datos del mantenimiento</h3>
-    <p><strong>Fecha:</strong> {{ object.fecha|date:"d/m/Y H:i" }}</p>
-    <p><strong>Tipo:</strong> {{ object.tipo }}</p>
-    <p><strong>Descripcion:</strong> {{ object.descripcion }}</p>
-    <p><strong>Kilometraje:</strong> {{ object.kilometraje }}</p>
-    <p><strong>Costo:</strong> ${{ object.costo }}</p>
-    <p><strong>Realizado:</strong> {{ object.realizado|yesno:"Si,No" }}</p>
-    <p>
-        <strong>Moto:</strong>
-        <a href="{% url 'moto_detail' moto.pk %}">{{ moto }}</a>
-    </p>
+<div class="rejilla rejilla--2">
+    <section class="panel">
+        <div class="panel__cabecera"><span class="panel__titulo">Datos del mantenimiento</span></div>
+        <div class="panel__cuerpo">
+            <div class="datos">
+                <div class="datos__fila">
+                    <span class="datos__termino">Fecha</span>
+                    <span class="datos__valor">{{ object.fecha|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Tipo</span>
+                    <span class="datos__valor">{{ object.tipo }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Kilometraje</span>
+                    <span class="datos__valor">{{ object.kilometraje|floatformat:0 }} km</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Costo</span>
+                    <span class="datos__valor">$ {{ object.costo|moneda }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Estado</span>
+                    <span class="datos__valor">
+                        {% if object.realizado %}
+                            <span class="pastilla pastilla--exito">Realizado</span>
+                        {% else %}
+                            <span class="pastilla pastilla--aviso">Pendiente</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Identificador</span>
+                    <span class="datos__valor mono">{{ object.pk }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel__cabecera"><span class="panel__titulo">Descripcion</span></div>
+        <div class="panel__cuerpo">
+            <p>{{ object.descripcion|linebreaksbr }}</p>
+        </div>
+    </section>
 </div>
+
+<section class="seccion">
+    <h2 class="seccion__titulo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"></circle><circle cx="18.5" cy="17.5" r="3.5"></circle><path d="M12 17.5h-3M8.5 17.5 10 8h4l2.5 6.5"></path></svg>
+        Moto intervenida
+    </h2>
+    <div class="panel">
+        <div class="panel__cuerpo">
+            {% if moto %}
+                <div class="perfil">
+                    {% if moto.fotoUrl %}
+                        <img class="avatar avatar--grande" src="{{ moto.fotoUrl }}" alt="Foto de la moto {{ moto.placa }}">
+                    {% else %}
+                        <span class="avatar avatar--grande mono">{{ moto.placa|slice:":2" }}</span>
+                    {% endif %}
+                    <div class="perfil__datos">
+                        <p class="perfil__nombre mb-0">{{ moto.marca }} {{ moto.modelo }}</p>
+                        <p class="perfil__correo mb-0 mono">{{ moto.placa }} &middot; {{ moto.anio }}</p>
+                        <p class="mt-4 mb-0">
+                            <a class="boton boton--fantasma boton--mini" href="{% url 'moto_detail' moto.pk %}">Ver ficha de la moto</a>
+                        </p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="vacio">
+                    <p class="vacio__titulo">Moto no encontrada</p>
+                    <p class="vacio__texto">La referencia {{ object.idMoto }} no apunta a ninguna moto.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
 {% endblock %}

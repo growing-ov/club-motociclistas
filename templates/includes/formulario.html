@@ -1,0 +1,27 @@
+{% comment %}
+Campos de un ModelForm con el estilo del proyecto.
+Uso: {% include "includes/formulario.html" %}
+{% endcomment %}
+{% if form.non_field_errors %}
+<div class="lista-errores mb-4">
+    {% for error in form.non_field_errors %}<span>{{ error }}</span>{% endfor %}
+</div>
+{% endif %}
+
+<div class="formulario__rejilla">
+    {% for campo in form %}
+        {% if campo.field.widget.input_type == "checkbox" %}
+            <div class="campo campo--check">
+                {{ campo }}
+                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+            </div>
+        {% else %}
+            <div class="campo {% if forloop.last %}campo--ancho{% endif %}">
+                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                {{ campo }}
+                {% if campo.help_text %}<span class="campo__ayuda">{{ campo.help_text }}</span>{% endif %}
+                {% for error in campo.errors %}<span class="campo__error">{{ error }}</span>{% endfor %}
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>

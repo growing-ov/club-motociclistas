@@ -1,49 +1,96 @@
 {% extends "base.html" %}
 
 {% block title %}Motociclistas{% endblock %}
+{% block migas %}Socios / Motociclistas{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Motociclistas</h2>
-    <a class="boton boton-primario" href="{% url 'motociclista_create' %}">Nuevo motociclista</a>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Motociclistas</h1>
+        <p class="pagina__descripcion">
+            Socios del club con su licencia, documentos al dia y motos asociadas.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--primario" href="{% url 'motociclista_create' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Nuevo motociclista
+        </a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Correo</th>
-            <th>Telefono</th>
-            <th>Licencia</th>
-            <th>Activo</th>
-            <th>Foto</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for socio in object_list %}
-        <tr>
-            <td>{{ socio.nombre }} {{ socio.apellido }}</td>
-            <td>{{ socio.correo }}</td>
-            <td>{{ socio.telefono|default:"-" }}</td>
-            <td>{{ socio.tipoLicencia|default:"-" }}</td>
-            <td>{{ socio.activo|yesno:"Si,No" }}</td>
-            <td>
-                {% if socio.fotoUrl %}
-                    <img class="mini" src="{{ socio.fotoUrl }}" alt="Foto de {{ socio.nombre }}">
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-            <td class="acciones">
-                <a href="{% url 'motociclista_detail' socio.pk %}">Ver</a>
-                <a href="{% url 'motociclista_update' socio.pk %}">Editar</a>
-                <a href="{% url 'motociclista_delete' socio.pk %}">Eliminar</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="7" class="vacio">Sin motociclistas registrados.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="panel">
+    <div class="panel__cabecera">
+        <span class="panel__titulo">{{ object_list|length }} socio{% if object_list|length != 1 %}s{% endif %} en el club</span>
+        <input class="buscador" type="search" placeholder="Buscar por nombre, correo o licencia..." data-filtro="tabla-socios" aria-label="Buscar motociclistas">
+    </div>
+    <div class="panel__cuerpo panel__cuerpo--plano">
+        <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-socios">
+                <thead>
+                    <tr>
+                        <th>Socio</th>
+                        <th>Contacto</th>
+                        <th>Licencia</th>
+                        <th>Nacimiento</th>
+                        <th>Estado</th>
+                        <th>Foto</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for socio in object_list %}
+                    <tr>
+                        <td>
+                            <span class="tabla__principal">
+                                <a href="{% url 'motociclista_detail' socio.pk %}">{{ socio.nombre }} {{ socio.apellido }}</a>
+                            </span>
+                            <span class="tabla__secundario">ID {{ socio.pk }}</span>
+                        </td>
+                        <td>
+                            <span class="tabla__principal">{{ socio.correo }}</span>
+                            <span class="tabla__secundario">{{ socio.telefono|default:"Sin telefono" }}</span>
+                        </td>
+                        <td>
+                            {% if socio.tipoLicencia %}
+                                <span class="pastilla pastilla--marca">{{ socio.tipoLicencia }}</span>
+                            {% else %}
+                                <span class="tenue">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="numeros">{{ socio.fechaNacimiento|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if socio.activo %}
+                                <span class="pastilla pastilla--exito">Activo</span>
+                            {% else %}
+                                <span class="pastilla pastilla--neutro">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if socio.fotoUrl %}
+                                <img class="miniatura" src="{{ socio.fotoUrl }}" alt="Foto de {{ socio.nombre }}" loading="lazy">
+                            {% else %}
+                                <span class="tenue">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="tabla__acciones">
+                                <a class="enlace-accion" href="{% url 'motociclista_detail' socio.pk %}">Ver</a>
+                                <a class="enlace-accion" href="{% url 'motociclista_update' socio.pk %}">Editar</a>
+                                <a class="enlace-accion enlace-accion--peligro" href="{% url 'motociclista_delete' socio.pk %}">Eliminar</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="vacio">
+                        <div class="vacio__icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></div>
+                        <p class="vacio__titulo">Todavia no hay socios</p>
+                        <p class="vacio__texto">Registra al primer motociclista del club para empezar a construir el historial.</p>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

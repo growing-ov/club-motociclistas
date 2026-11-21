@@ -1,52 +1,159 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio{% endblock %}
+{% block title %}Panel general{% endblock %}
+{% block migas %}Panel general{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Resumen del club</h2>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Resumen del club</h1>
+        <p class="pagina__descripcion">
+            Estado general de laccion: socios, flota, mantenimiento y agenda de rodadas.
+            Los datos provienen de MongoDB y cumplen los JSON Schemas del proyecto.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--fantasma" href="/api/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16"></path></svg>
+            API JSON
+        </a>
+        <a class="boton boton--primario" href="{% url 'rodada_create' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Nueva rodada
+        </a>
+    </div>
 </div>
 
-<div class="tarjetas">
-    <div class="tarjeta">
-        <h3>Motociclistas</h3>
-        <p class="cifra">{{ datos.socios }}</p>
-        <a href="{% url 'motociclista_list' %}">Ver socios</a>
-    </div>
-    <div class="tarjeta">
-        <h3>Documentos</h3>
-        <p class="cifra">{{ datos.documentos }}</p>
-        <a href="{% url 'documento_list' %}">Ver documentos</a>
-    </div>
-    <div class="tarjeta">
-        <h3>Motos</h3>
-        <p class="cifra">{{ datos.motos }}</p>
-        <a href="{% url 'moto_list' %}">Ver motos</a>
-    </div>
-    <div class="tarjeta">
-        <h3>Mantenimientos</h3>
-        <p class="cifra">{{ datos.mantenimientos }}</p>
-        <a href="{% url 'mantenimiento_list' %}">Ver mantenimientos</a>
-    </div>
-    <div class="tarjeta">
-        <h3>Accidentes</h3>
-        <p class="cifra">{{ datos.accidentes }}</p>
-        <a href="{% url 'accidente_list' %}">Ver accidentes</a>
-    </div>
-    <div class="tarjeta">
-        <h3>Rodadas</h3>
-        <p class="cifra">{{ datos.rodadas }}</p>
-        <a href="{% url 'rodada_list' %}">Ver rodadas</a>
-    </div>
-    <div class="tarjeta">
-        <h3>Inscripciones</h3>
-        <p class="cifra">{{ datos.inscripciones }}</p>
-        <a href="{% url 'inscripcion_list' %}">Ver inscripciones</a>
-    </div>
-    <div class="tarjeta">
-        <h3>Fotos de galeria</h3>
-        <p class="cifra">{{ datos.fotos }}</p>
-        <a href="{% url 'galeria_list' %}">Ver galeria</a>
-    </div>
+<div class="rejilla rejilla--4 mb-5">
+    <a class="metrica" href="{% url 'motociclista_list' %}">
+        <span class="metrica__icono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+        </span>
+        <span class="metrica__datos">
+            <span class="metrica__etiqueta">Motociclistas</span>
+            <span class="metrica__cifra">{{ datos.socios }}</span>
+            <span class="metrica__pie">Socios registrados</span>
+        </span>
+    </a>
+
+    <a class="metrica metrica--info" href="{% url 'moto_list' %}">
+        <span class="metrica__icono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"></circle><circle cx="18.5" cy="17.5" r="3.5"></circle><path d="M12 17.5h-3M8.5 17.5 10 8h4l2.5 6.5M14 8h3.5l1 3.5"></path></svg>
+        </span>
+        <span class="metrica__datos">
+            <span class="metrica__etiqueta">Motos</span>
+            <span class="metrica__cifra">{{ datos.motos }}</span>
+            <span class="metrica__pie">Unidades en la flota</span>
+        </span>
+    </a>
+
+    <a class="metrica metrica--exito" href="{% url 'rodada_list' %}">
+        <span class="metrica__icono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+        </span>
+        <span class="metrica__datos">
+            <span class="metrica__etiqueta">Rodadas</span>
+            <span class="metrica__cifra">{{ datos.rodadas }}</span>
+            <span class="metrica__pie">Salidas grupales</span>
+        </span>
+    </a>
+
+    <a class="metrica metrica--aviso" href="{% url 'inscripcion_list' %}">
+        <span class="metrica__icono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        </span>
+        <span class="metrica__datos">
+            <span class="metrica__etiqueta">Inscripciones</span>
+            <span class="metrica__cifra">{{ datos.inscripciones }}</span>
+            <span class="metrica__pie">Participaciones</span>
+        </span>
+    </a>
+
+    <a class="metrica metrica--peligro" href="{% url 'accidente_list' %}">
+        <span class="metrica__icono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></svg>
+        </span>
+        <span class="metrica__datos">
+            <span class="metrica__etiqueta">Accidentes</span>
+            <span class="metrica__cifra">{{ datos.accidentes }}</span>
+            <span class="metrica__pie">Registrados</span>
+        </span>
+    </a>
+
+    <a class="metrica metrica--info" href="{% url 'mantenimiento_list' %}">
+        <span class="metrica__icono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.6 9.6a2.1 2.1 0 0 1-3-3z"></path><path d="m14.7 6.3 3-3a4 4 0 0 1 5 5l-3 3"></path></svg>
+        </span>
+        <span class="metrica__datos">
+            <span class="metrica__etiqueta">Mantenimientos</span>
+            <span class="metrica__cifra">{{ datos.mantenimientos }}</span>
+            <span class="metrica__pie">Intervenciones</span>
+        </span>
+    </a>
+
+    <a class="metrica metrica--exito" href="{% url 'documento_list' %}">
+        <span class="metrica__icono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M9 15h6M9 11h3"></path></svg>
+        </span>
+        <span class="metrica__datos">
+            <span class="metrica__etiqueta">Documentos</span>
+            <span class="metrica__cifra">{{ datos.documentos }}</span>
+            <span class="metrica__pie">Licencias y paz y salvo</span>
+        </span>
+    </a>
+
+    <a class="metrica" href="{% url 'galeria_list' %}">
+        <span class="metrica__icono">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.8"></circle><path d="m21 15-5-5L5 21"></path></svg>
+        </span>
+        <span class="metrica__datos">
+            <span class="metrica__etiqueta">Fotos</span>
+            <span class="metrica__cifra">{{ datos.fotos }}</span>
+            <span class="metrica__pie">En la galeria</span>
+        </span>
+    </a>
+</div>
+
+<div class="rejilla rejilla--2">
+    <section class="panel">
+        <div class="panel__cabecera">
+            <span class="panel__titulo">Como esta construido el proyecto</span>
+            <span class="chip">MongoDB</span>
+        </div>
+        <div class="panel__cuerpo">
+            <p class="pequeno tenue mb-4">
+                El club no usa joins: cada documento apunta a otro guardando su
+                <code>ObjectId</code> en texto plano. Los JSON Schemas describen el
+                contrato de datos de cada coleccion y validan lo que se devuelve por la API.
+            </p>
+            <div class="fila">
+                <span class="chip">Django 6.1</span>
+                <span class="chip">django-mongodb-backend</span>
+                <span class="chip">JSON Schema 2020-12</span>
+                <span class="chip">jsonschema</span>
+                <span class="chip">Docker</span>
+                <span class="chip">Gunicorn</span>
+                <span class="chip">WhiteNoise</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel__cabecera">
+            <span class="panel__titulo">Accesos rapidos a los datos</span>
+        </div>
+        <div class="panel__cuerpo">
+            <p class="pequeno tenue mb-4">
+                Todos los listados se pueden filtrar escribiendo en el buscador: el
+                filtrado ocurre en el navegador, sin recargar la pagina.
+            </p>
+            <div class="fila">
+                <a class="boton boton--fantasma" href="/api/motociclistas/">/api/motociclistas/</a>
+                <a class="boton boton--fantasma" href="/api/motos/">/api/motos/</a>
+                <a class="boton boton--fantasma" href="/api/rodadas/">/api/rodadas/</a>
+                <a class="boton boton--fantasma" href="/api/esquemas/">/api/esquemas/</a>
+            </div>
+        </div>
+    </section>
 </div>
 {% endblock %}

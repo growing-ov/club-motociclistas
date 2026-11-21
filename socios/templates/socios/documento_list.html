@@ -1,53 +1,90 @@
 {% extends "base.html" %}
+{% load club %}
 
 {% block title %}Documentos{% endblock %}
+{% block migas %}Socios / Documentos{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Documentos</h2>
-    <a class="boton boton-primario" href="{% url 'documento_create' %}">Nuevo documento</a>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Documentos</h1>
+        <p class="pagina__descripcion">
+            Cedulas, licencias, SOAT y tecnomecanica de cada socio. El vinculo con el
+            socio es una referencia plana: se guarda su <code>ObjectId</code> en texto.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--primario" href="{% url 'documento_create' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Nuevo documento
+        </a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Documento</th>
-            <th>Numero</th>
-            <th>Socio</th>
-            <th>Emision</th>
-            <th>Vencimiento</th>
-            <th>Archivo</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for documento in object_list %}
-        <tr>
-            <td>{{ documento.nombreDocumento }}</td>
-            <td>{{ documento.numeroDocumento }}</td>
-            <td>
-                <a href="{% url 'motociclista_detail' documento.idMotociclista.pk %}">
-                    {{ documento.idMotociclista }}
-                </a>
-            </td>
-            <td>{{ documento.fechaEmision|date:"d/m/Y" }}</td>
-            <td>{{ documento.fechaVencimiento|date:"d/m/Y" }}</td>
-            <td>
-                {% if documento.archivoUrl %}
-                    <a href="{{ documento.archivoUrl }}" target="_blank">Ver archivo</a>
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-            <td class="acciones">
-                <a href="{% url 'documento_detail' documento.pk %}">Ver</a>
-                <a href="{% url 'documento_update' documento.pk %}">Editar</a>
-                <a href="{% url 'documento_delete' documento.pk %}">Eliminar</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="7" class="vacio">Sin documentos registrados.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="panel">
+    <div class="panel__cabecera">
+        <span class="panel__titulo">{{ object_list|length }} documento{% if object_list|length != 1 %}s{% endif %} registrados</span>
+        <input class="buscador" type="search" placeholder="Buscar por tipo o numero..." data-filtro="tabla-documentos" aria-label="Buscar documentos">
+    </div>
+    <div class="panel__cuerpo panel__cuerpo--plano">
+        <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-documentos">
+                <thead>
+                    <tr>
+                        <th>Documento</th>
+                        <th>Numero</th>
+                        <th>Socio</th>
+                        <th>Emision</th>
+                        <th>Vencimiento</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for documento in object_list %}
+                    <tr>
+                        <td>
+                            <span class="tabla__principal">{{ documento.nombreDocumento }}</span>
+                            {% if documento.archivoUrl %}
+                                <a class="tabla__secundario" href="{{ documento.archivoUrl }}" target="_blank" rel="noopener">Ver archivo</a>
+                            {% endif %}
+                        </td>
+                        <td class="mono">{{ documento.numeroDocumento }}</td>
+                        <td>
+                            {% with socio=socios|get:documento.idMotociclista %}
+                                {% if socio %}
+                                    <a href="{% url 'motociclista_detail' socio.pk %}">{{ socio.nombre }} {{ socio.apellido }}</a>
+                                {% else %}
+                                    <span class="pastilla pastilla--peligro">Sin socio</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td class="numeros">{{ documento.fechaEmision|date:"d/m/Y" }}</td>
+                        <td class="numeros">
+                            {{ documento.fechaVencimiento|date:"d/m/Y" }}
+                            {% if documento.fechaVencimiento|vigente %}
+                                <span class="pastilla pastilla--exito">Vigente</span>
+                            {% else %}
+                                <span class="pastilla pastilla--peligro">Vencido</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="tabla__acciones">
+                                <a class="enlace-accion" href="{% url 'documento_detail' documento.pk %}">Ver</a>
+                                <a class="enlace-accion" href="{% url 'documento_update' documento.pk %}">Editar</a>
+                                <a class="enlace-accion enlace-accion--peligro" href="{% url 'documento_delete' documento.pk %}">Eliminar</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="vacio">
+                        <div class="vacio__icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path></svg></div>
+                        <p class="vacio__titulo">Sin documentos</p>
+                        <p class="vacio__texto">Los documentos de los socios apareceran aqui.</p>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

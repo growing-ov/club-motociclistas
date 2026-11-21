@@ -1,18 +1,44 @@
 {% extends "base.html" %}
 
 {% block title %}Eliminar foto{% endblock %}
+{% block migas %}Eventos / Galeria / foto / Eliminar{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Eliminar foto</h2>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Eliminar foto</h1>
+        <p class="pagina__descripcion">La accion es permanente: la foto se elimina de la galeria.</p>
+    </div>
 </div>
 
-<div class="tarjeta">
-    <p>Estas seguro de eliminar <strong>{{ object }}</strong>?</p>
-    <form method="post">
-        {% csrf_token %}
-        <button class="boton boton-peligro" type="submit">Si, eliminar</button>
-        <a class="boton" href="{% url 'galeria_list' %}">Cancelar</a>
-    </form>
+<div class="panel">
+    <div class="panel__cuerpo">
+        <div class="aviso aviso--warning">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></svg>
+            <span>La imagen queda registrada en la direccion web original.</span>
+        </div>
+
+        <div class="datos mt-4 mb-4">
+            <div class="datos__fila">
+                <span class="datos__termino">Registro</span>
+                <span class="datos__valor">{{ object.titulo }} &middot; {{ object.fechaSubida|date:'d/m/Y' }}</span>
+            </div>
+            <div class="datos__fila">
+                <span class="datos__termino">Identificador</span>
+                <span class="datos__valor mono">{{ object.pk }}</span>
+            </div>
+        </div>
+
+        <form method="post" data-confirmar="Se eliminara la foto {{ object.titulo }}. Continuar?">
+            {% csrf_token %}
+            <div class="formulario__pie">
+                <button class="boton boton--peligro" type="submit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
+                    Si, eliminar definitivamente
+                </button>
+                <a class="boton boton--fantasma" href="{% url 'galeria_list' %}">Mejor no</a>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

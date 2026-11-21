@@ -1,29 +1,96 @@
 {% extends "base.html" %}
+{% load club %}
 
 {% block title %}Inscripcion{% endblock %}
+{% block migas %}Eventos / Inscripciones / {{ object.pk }}{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Inscripcion</h2>
-    <div>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Inscripcion</h1>
+        <p class="pagina__descripcion">
+            Participacion de un socio en una rodada. Ambas referencias son planas:
+            se guardan los <code>ObjectId</code> en texto.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--fantasma" href="{% url 'inscripcion_list' %}">Volver</a>
         <a class="boton" href="{% url 'inscripcion_update' object.pk %}">Editar</a>
-        <a class="boton boton-peligro" href="{% url 'inscripcion_delete' object.pk %}">Eliminar</a>
-        <a class="boton" href="{% url 'inscripcion_list' %}">Volver</a>
+        <a class="boton boton--peligro" href="{% url 'inscripcion_delete' object.pk %}">Eliminar</a>
     </div>
 </div>
 
-<div class="tarjeta">
-    <h3>Datos de la inscripcion</h3>
-    <p><strong>Fecha de inscripcion:</strong> {{ object.fechaInscripcion|date:"d/m/Y H:i" }}</p>
-    <p><strong>Asistio:</strong> {{ object.asistio|yesno:"Si,No" }}</p>
-    <p><strong>Observaciones:</strong> {{ object.observaciones|default:"-" }}</p>
-    <p>
-        <strong>Motociclista:</strong>
-        <a href="{% url 'motociclista_detail' socio.pk %}">{{ socio }}</a>
-    </p>
-    <p>
-        <strong>Rodada:</strong>
-        <a href="{% url 'rodada_detail' rodada.pk %}">{{ rodada }}</a>
-    </p>
+<div class="rejilla rejilla--2">
+    <section class="panel">
+        <div class="panel__cabecera"><span class="panel__titulo">Datos de la inscripcion</span></div>
+        <div class="panel__cuerpo">
+            <div class="datos">
+                <div class="datos__fila">
+                    <span class="datos__termino">Fecha de inscripcion</span>
+                    <span class="datos__valor">{{ object.fechaInscripcion|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Asistio</span>
+                    <span class="datos__valor">
+                        {% if object.asistio %}
+                            <span class="pastilla pastilla--exito">Si</span>
+                        {% else %}
+                            <span class="pastilla pastilla--neutro">No</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Identificador</span>
+                    <span class="datos__valor mono">{{ object.pk }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Referencia al socio</span>
+                    <span class="datos__valor mono">{{ object.idMotociclista }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Referencia a la rodada</span>
+                    <span class="datos__valor mono">{{ object.idRodada }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Observaciones</span>
+                    <span class="datos__valor">{{ object.observaciones|default:"Sin observaciones" }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel__cabecera"><span class="panel__titulo">Socio y rodada</span></div>
+        <div class="panel__cuerpo apilado">
+            {% if socio %}
+                <div class="perfil">
+                    {% if socio.fotoUrl %}
+                        <img class="avatar avatar--grande" src="{{ socio.fotoUrl }}" alt="Foto de {{ socio.nombre }}">
+                    {% else %}
+                        <span class="avatar avatar--grande">{{ socio.nombre|initiales }}</span>
+                    {% endif %}
+                    <div class="perfil__datos">
+                        <p class="perfil__nombre mb-0">{{ socio.nombre }} {{ socio.apellido }}</p>
+                        <p class="perfil__correo mb-0">{{ socio.correo }}</p>
+                        <p class="mt-4 mb-0">
+                            <a class="boton boton--fantasma boton--mini" href="{% url 'motociclista_detail' socio.pk %}">Ver ficha del socio</a>
+                        </p>
+                    </div>
+                </div>
+            {% else %}
+                <p class="tenue">Socio no encontrado para la referencia {{ object.idMotociclista }}.</p>
+            {% endif %}
+
+            {% if rodada %}
+                <div class="fila">
+                    <span class="pastilla {{ rodada.estado|estado_clase }}">{{ rodada.get_estado_display }}</span>
+                    <a class="fuerte" href="{% url 'rodada_detail' rodada.pk %}">{{ rodada.nombre }}</a>
+                    <span class="tenue pequeno">{{ rodada.fechaSalida|date:"d/m/Y H:i" }}</span>
+                </div>
+            {% else %}
+                <p class="tenue">Rodada no encontrada para la referencia {{ object.idRodada }}.</p>
+            {% endif %}
+        </div>
+    </section>
 </div>
 {% endblock %}

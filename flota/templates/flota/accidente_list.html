@@ -1,47 +1,82 @@
 {% extends "base.html" %}
+{% load club %}
 
 {% block title %}Accidentes{% endblock %}
+{% block migas %}Flota / Accidentes{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Accidentes</h2>
-    <a class="boton boton-primario" href="{% url 'accidente_create' %}">Nuevo accidente</a>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Accidentes</h1>
+        <p class="pagina__descripcion">
+            Registro de accidentes con su ubicacion, gravedad y costo estimado de
+            reparacion.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--primario" href="{% url 'accidente_create' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Nuevo accidente
+        </a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Fecha</th>
-            <th>Gravedad</th>
-            <th>Moto</th>
-            <th>Ubicacion</th>
-            <th>Descripcion</th>
-            <th>Costo estimado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for accidente in object_list %}
-        <tr>
-            <td>{{ accidente.fecha|date:"d/m/Y" }}</td>
-            <td>{{ accidente.get_gravedad_display }}</td>
-            <td>
-                <a href="{% url 'moto_detail' accidente.idMoto.pk %}">
-                    {{ accidente.idMoto }}
-                </a>
-            </td>
-            <td>{{ accidente.ubicacion }}</td>
-            <td>{{ accidente.descripcion }}</td>
-            <td>${{ accidente.costoEstimado|default:"-" }}</td>
-            <td class="acciones">
-                <a href="{% url 'accidente_detail' accidente.pk %}">Ver</a>
-                <a href="{% url 'accidente_update' accidente.pk %}">Editar</a>
-                <a href="{% url 'accidente_delete' accidente.pk %}">Eliminar</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="7" class="vacio">Sin accidentes registrados.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="panel">
+    <div class="panel__cabecera">
+        <span class="panel__titulo">{{ object_list|length }} accidente{% if object_list|length != 1 %}s{% endif %} registrado{% if object_list|length != 1 %}s{% endif %}</span>
+        <input class="buscador" type="search" placeholder="Buscar por ubicacion o moto..." data-filtro="tabla-accidentes" aria-label="Buscar accidentes">
+    </div>
+    <div class="panel__cuerpo panel__cuerpo--plano">
+        <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-accidentes">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Ubicacion</th>
+                        <th>Moto</th>
+                        <th>Gravedad</th>
+                        <th>Costo estimado</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for accidente in object_list %}
+                    <tr>
+                        <td class="numeros">{{ accidente.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'accidente_detail' accidente.pk %}">{{ accidente.ubicacion }}</a>
+                            <span class="tabla__secundario">{{ accidente.descripcion|truncatechars:60 }}</span>
+                        </td>
+                        <td>
+                            {% with moto=motos|get:accidente.idMoto %}
+                                {% if moto %}
+                                    <a href="{% url 'moto_detail' moto.pk %}">{{ moto.marca }} {{ moto.modelo }}</a>
+                                    <span class="tabla__secundario mono">{{ moto.placa }}</span>
+                                {% else %}
+                                    <span class="pastilla pastilla--peligro">Sin moto</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td><span class="pastilla {{ accidente.gravedad|gravedad_clase }}">{{ accidente.get_gravedad_display }}</span></td>
+                        <td class="numeros">$ {{ accidente.costoEstimado|moneda }}</td>
+                        <td>
+                            <div class="tabla__acciones">
+                                <a class="enlace-accion" href="{% url 'accidente_detail' accidente.pk %}">Ver</a>
+                                <a class="enlace-accion" href="{% url 'accidente_update' accidente.pk %}">Editar</a>
+                                <a class="enlace-accion enlace-accion--peligro" href="{% url 'accidente_delete' accidente.pk %}">Eliminar</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="vacio">
+                        <div class="vacio__icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg></div>
+                        <p class="vacio__titulo">Sin accidentes</p>
+                        <p class="vacio__texto">Mejor que nada: aqui se documentan los incidents que ocurran en ruta.</p>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

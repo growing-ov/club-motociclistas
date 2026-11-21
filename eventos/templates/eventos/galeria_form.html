@@ -1,16 +1,28 @@
 {% extends "base.html" %}
 
-{% block title %}{% if object %}Editar{% else %}Nueva{% endif %} foto{% endblock %}
+{% block title %} foto de la galeria{% endblock %}
+{% block migas %}Eventos / Galeria / foto de la galeria{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>{% if object %}Editar{% else %}Nueva{% endif %} foto</h2>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>{% if object %}Editar{% else %}Nuevo{% endif %} foto de la galeria</h1>
+        <p class="pagina__descripcion">La imagen se referencia por URL: el club no almacena archivos binarios.</p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--fantasma" href="{% url 'galeria_list' %}">Cancelar</a>
+    </div>
 </div>
 
-<form method="post" class="tarjeta">
+<form method="post" class="formulario" novalidate>
     {% csrf_token %}
-    {{ form.as_p }}
-    <button class="boton boton-primario" type="submit">Guardar</button>
-    <a class="boton" href="{% url 'galeria_list' %}">Cancelar</a>
+    {% include "includes/formulario.html" %}
+    <div class="formulario__pie">
+        <button class="boton boton--primario" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+            Guardar cambios
+        </button>
+        <a class="boton boton--fantasma" href="{% url 'galeria_list' %}">Volver al listado</a>
+    </div>
 </form>
 {% endblock %}

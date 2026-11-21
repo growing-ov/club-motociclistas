@@ -1,71 +1,174 @@
 {% extends "base.html" %}
+{% load club %}
 
 {% block title %}{{ object.nombre }}{% endblock %}
+{% block migas %}Eventos / Rodadas / {{ object.nombre }}{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>{{ object.nombre }}</h2>
-    <div>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>{{ object.nombre }}</h1>
+        <p class="pagina__descripcion">
+            Salida grupal del {{ object.fechaSalida|date:"d/m/Y H:i" }}. Se anuncia en
+            {{ object.puntoEncuentro }} con destino a {{ object.destino }}.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--fantasma" href="{% url 'rodada_list' %}">Volver</a>
         <a class="boton" href="{% url 'rodada_update' object.pk %}">Editar</a>
-        <a class="boton boton-peligro" href="{% url 'rodada_delete' object.pk %}">Eliminar</a>
-        <a class="boton" href="{% url 'rodada_list' %}">Volver</a>
+        <a class="boton boton--peligro" href="{% url 'rodada_delete' object.pk %}">Eliminar</a>
     </div>
 </div>
 
-<div class="tarjeta">
-    <h3>Datos de la rodada</h3>
-    <p><strong>Fecha de salida:</strong> {{ object.fechaSalida|date:"d/m/Y H:i" }}</p>
-    <p><strong>Punto de encuentro:</strong> {{ object.puntoEncuentro }}</p>
-    <p><strong>Destino:</strong> {{ object.destino }}</p>
-    <p><strong>Estado:</strong> {{ object.get_estado_display }}</p>
-    <p><strong>Cupo maximo:</strong> {{ object.cupoMaximo }}</p>
-    <p><strong>Distancia:</strong> {{ object.distanciaKm|default:"-" }} km</p>
-    <p><strong>Costo:</strong> ${{ object.costo|default:"-" }}</p>
+<div class="rejilla rejilla--2 mb-5">
+    <section class="panel">
+        <div class="panel__cabecera"><span class="panel__titulo">Datos de la rodada</span></div>
+        <div class="panel__cuerpo">
+            <div class="datos">
+                <div class="datos__fila">
+                    <span class="datos__termino">Fecha de salida</span>
+                    <span class="datos__valor">{{ object.fechaSalida|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Punto de encuentro</span>
+                    <span class="datos__valor">{{ object.puntoEncuentro }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Destino</span>
+                    <span class="datos__valor">{{ object.destino }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Estado</span>
+                    <span class="datos__valor">
+                        <span class="pastilla {{ object.estado|estado_clase }}">{{ object.get_estado_display }}</span>
+                    </span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Cupo maximo</span>
+                    <span class="datos__valor">{{ object.cupoMaximo }} personas</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Distancia</span>
+                    <span class="datos__valor">{% if object.distanciaKm %}{{ object.distanciaKm }} km{% else %}Sin definir{% endif %}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Costo por persona</span>
+                    <span class="datos__valor">$ {{ object.costo|moneda }}</span>
+                </div>
+                <div class="datos__fila">
+                    <span class="datos__termino">Identificador</span>
+                    <span class="datos__valor mono">{{ object.pk }}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="panel__cabecera"><span class="panel__titulo">Cupo</span></div>
+        <div class="panel__cuerpo">
+            <div class="rejilla rejilla--3">
+                <div class="metrica">
+                    <span class="metrica__datos">
+                        <span class="metrica__etiqueta">Cupo</span>
+                        <span class="metrica__cifra">{{ object.cupoMaximo }}</span>
+                    </span>
+                </div>
+                <div class="metrica metrica--exito">
+                    <span class="metrica__datos">
+                        <span class="metrica__etiqueta">Inscritos</span>
+                        <span class="metrica__cifra">{{ inscripciones|length }}</span>
+                    </span>
+                </div>
+                <div class="metrica metrica--aviso">
+                    <span class="metrica__datos">
+                        <span class="metrica__etiqueta">Disponibles</span>
+                        <span class="metrica__cifra">{{ cupo_disponible }}</span>
+                    </span>
+                </div>
+            </div>
+            <p class="pequeno tenue mt-4 mb-0">
+                Las inscripciones y las fotos apuntan a esta rodada mediante su
+                <code>ObjectId</code> en texto.
+            </p>
+        </div>
+    </section>
 </div>
 
-<h3>Inscripciones</h3>
-<table>
-    <thead>
-        <tr><th>Motociclista</th><th>Fecha de inscripcion</th><th>Asistio</th><th>Acciones</th></tr>
-    </thead>
-    <tbody>
-    {% for inscripcion in inscripciones %}
-        <tr>
-            <td>
-                <a href="{% url 'motociclista_detail' inscripcion.idMotociclista.pk %}">
-                    {{ inscripcion.idMotociclista }}
-                </a>
-            </td>
-            <td>{{ inscripcion.fechaInscripcion|date:"d/m/Y" }}</td>
-            <td>{{ inscripcion.asistio|yesno:"Si,No" }}</td>
-            <td class="acciones">
-                <a href="{% url 'inscripcion_detail' inscripcion.pk %}">Ver</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="4" class="vacio">Esta rodada no tiene inscripciones.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<section class="seccion">
+    <h2 class="seccion__titulo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+        Inscripciones
+    </h2>
+    <div class="panel">
+        <div class="panel__cuerpo panel__cuerpo--plano">
+            <div class="tabla-envoltura">
+                <table class="tabla">
+                    <thead><tr><th>Motociclista</th><th>Fecha de inscripcion</th><th>Asistio</th><th>Observaciones</th><th style="text-align:right">Acciones</th></tr></thead>
+                    <tbody>
+                    {% for inscripcion in inscripciones %}
+                        {% with socio=socios|get:inscripcion.idMotociclista %}
+                        <tr>
+                            <td>
+                                {% if socio %}
+                                    <a href="{% url 'motociclista_detail' socio.pk %}">{{ socio.nombre }} {{ socio.apellido }}</a>
+                                {% else %}
+                                    <span class="pastilla pastilla--peligro">Socio no encontrado</span>
+                                {% endif %}
+                            </td>
+                            <td class="numeros">{{ inscripcion.fechaInscripcion|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if inscripcion.asistio %}
+                                    <span class="pastilla pastilla--exito">Si</span>
+                                {% else %}
+                                    <span class="pastilla pastilla--neutro">No</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ inscripcion.observaciones|default:"-" }}</td>
+                            <td><div class="tabla__acciones"><a class="enlace-accion" href="{% url 'inscripcion_detail' inscripcion.pk %}">Ver</a></div></td>
+                        </tr>
+                        {% endwith %}
+                    {% empty %}
+                        <tr><td colspan="5" class="vacio">
+                            <p class="vacio__titulo">Esta rodada no tiene inscripciones</p>
+                            <p class="vacio__texto">Abre el cupo e invita a los socios a participar.</p>
+                        </td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
 
-<h3>Galeria de fotos</h3>
-<table>
-    <thead>
-        <tr><th>Titulo</th><th>Fecha de subida</th><th>Foto</th><th>Acciones</th></tr>
-    </thead>
-    <tbody>
-    {% for foto in galeria %}
-        <tr>
-            <td>{{ foto.titulo }}</td>
-            <td>{{ foto.fechaSubida|date:"d/m/Y" }}</td>
-            <td><a href="{{ foto.urlFoto }}" target="_blank">Ver foto</a></td>
-            <td class="acciones">
-                <a href="{% url 'galeria_detail' foto.pk %}">Ver</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="4" class="vacio">Esta rodada no tiene fotos en su galeria.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<section class="seccion">
+    <h2 class="seccion__titulo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.8"></circle><path d="m21 15-5-5L5 21"></path></svg>
+        Galeria de la rodada
+    </h2>
+    <div class="panel">
+        <div class="panel__cuerpo">
+            {% if galeria %}
+            <div class="galeria">
+                {% for foto in galeria %}
+                    <article class="galeria__item">
+                        <a href="{{ foto.urlFoto }}" target="_blank" rel="noopener">
+                            <img class="galeria__imagen" src="{{ foto.urlFoto }}" alt="{{ foto.titulo }}" loading="lazy">
+                        </a>
+                        <div class="galeria__pie">
+                            <p class="galeria__titulo"><a href="{% url 'galeria_detail' foto.pk %}">{{ foto.titulo }}</a></p>
+                            <p class="galeria__meta">{{ foto.fechaSubida|date:"d/m/Y" }}</p>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="vacio">
+                <div class="vacio__icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.8"></circle><path d="m21 15-5-5L5 21"></path></svg></div>
+                <p class="vacio__titulo">Sin fotos en esta rodada</p>
+                <p class="vacio__texto">Agrega las imagenes del recorrido desde la seccion Galeria.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
 {% endblock %}

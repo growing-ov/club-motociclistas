@@ -1,33 +1,145 @@
-{% load static %}
-<!doctype html>
-<html lang="es">
+{% load static %}<!doctype html>
+<html lang="es" data-tema="claro">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <meta name="description" content="Gestion integral del Club de Motociclistas: socios, documentos, motos, mantenimientos, accidentes, rodadas, inscripciones y galeria.">
     <title>{% block title %}Club de Motociclistas{% endblock %}</title>
+    <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
 </head>
 <body>
-    <header>
-        <h1><a href="{% url 'home' %}">Club de Motociclistas</a></h1>
-        <nav>
-            <a href="{% url 'motociclista_list' %}">Motociclistas</a>
-            <a href="{% url 'documento_list' %}">Documentos</a>
-            <a href="{% url 'moto_list' %}">Motos</a>
-            <a href="{% url 'mantenimiento_list' %}">Mantenimientos</a>
-            <a href="{% url 'accidente_list' %}">Accidentes</a>
-            <a href="{% url 'rodada_list' %}">Rodadas</a>
-            <a href="{% url 'inscripcion_list' %}">Inscripciones</a>
-            <a href="{% url 'galeria_list' %}">Galeria</a>
+<div class="app">
+
+    <aside class="lateral" id="lateral">
+        <div class="lateral__marca">
+            <span class="lateral__logo" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="8.5"></circle>
+                    <circle cx="12" cy="12" r="2.6"></circle>
+                    <path d="M12 3.5v3.4M12 17.1v3.4M3.5 12h3.4M17.1 12h3.4M6 6l2.4 2.4M15.6 15.6 18 18M18 6l-2.4 2.4M8.4 15.6 6 18"></path>
+                </svg>
+            </span>
+            <span>
+                <span class="lateral__titulo">Club de Motociclistas</span>
+                <span class="lateral__subtitulo">Gestion integral</span>
+            </span>
+        </div>
+
+        <nav class="menu" aria-label="Menu principal">
+            <p class="menu__grupo">General</p>
+            <a class="menu__enlace {% if request.resolver_match.url_name == 'home' %}activo{% endif %}" href="{% url 'home' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>
+                Panel general
+            </a>
+
+            <p class="menu__grupo">Socios</p>
+            <a class="menu__enlace {% if 'motociclista' in request.resolver_match.url_name %}activo{% endif %}" href="{% url 'motociclista_list' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+                Motociclistas
+            </a>
+            <a class="menu__enlace {% if 'documento' in request.resolver_match.url_name %}activo{% endif %}" href="{% url 'documento_list' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M9 15h6M9 11h3"></path></svg>
+                Documentos
+            </a>
+
+            <p class="menu__grupo">Flota</p>
+            <a class="menu__enlace {% if 'moto' in request.resolver_match.url_name %}activo{% endif %}" href="{% url 'moto_list' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"></circle><circle cx="18.5" cy="17.5" r="3.5"></circle><path d="M12 17.5h-3M8.5 17.5 10 8h4l2.5 6.5M14 8h3.5l1 3.5"></path></svg>
+                Motos
+            </a>
+            <a class="menu__enlace {% if 'mantenimiento' in request.resolver_match.url_name %}activo{% endif %}" href="{% url 'mantenimiento_list' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.6 9.6a2.1 2.1 0 0 1-3-3z"></path><path d="m14.7 6.3 3-3a4 4 0 0 1 5 5l-3 3"></path></svg>
+                Mantenimientos
+            </a>
+            <a class="menu__enlace {% if 'accidente' in request.resolver_match.url_name %}activo{% endif %}" href="{% url 'accidente_list' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></svg>
+                Accidentes
+            </a>
+
+            <p class="menu__grupo">Eventos</p>
+            <a class="menu__enlace {% if 'rodada' in request.resolver_match.url_name %}activo{% endif %}" href="{% url 'rodada_list' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+                Rodadas
+            </a>
+            <a class="menu__enlace {% if 'inscripcion' in request.resolver_match.url_name %}activo{% endif %}" href="{% url 'inscripcion_list' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                Inscripciones
+            </a>
+            <a class="menu__enlace {% if 'galeria' in request.resolver_match.url_name %}activo{% endif %}" href="{% url 'galeria_list' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.8"></circle><path d="m21 15-5-5L5 21"></path></svg>
+                Galeria
+            </a>
+
+            <p class="menu__grupo">Datos</p>
+            <a class="menu__enlace" href="/api/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4M14.5 4l-5 16"></path></svg>
+                API JSON
+            </a>
+            <a class="menu__enlace" href="/api/esquemas/">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"></path><path d="M4 9h16M9 20V9"></path></svg>
+                JSON Schemas
+            </a>
         </nav>
-    </header>
-    <main>
-        {% if messages %}
-            {% for mensaje in messages %}
-                <p class="alerta {{ mensaje.tags }}">{{ mensaje }}</p>
-            {% endfor %}
-        {% endif %}
-        {% block content %}{% endblock %}
-    </main>
+
+        <div class="lateral__pie">
+            <p class="mb-0">MongoDB &middot; Django 6.1 &middot; v1.0</p>
+            <p class="mb-0"><a href="https://github.com/growing-ov/club-motociclistas" target="_blank" rel="noopener">Repositorio en GitHub</a></p>
+        </div>
+    </aside>
+
+    <div class="velo" data-menu-boton aria-hidden="true"></div>
+
+    <div class="app__cuerpo">
+        <header class="barra">
+            <button class="barra__menu" type="button" data-menu-boton aria-label="Abrir menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>
+            </button>
+            <div class="barra__migas">
+                <span>Club de Motociclistas</span>
+                <span aria-hidden="true">/</span>
+                <strong>{% block migas %}Panel{% endblock %}</strong>
+            </div>
+            <div class="barra__acciones">
+                <button class="boton boton--icono boton--fantasma" type="button" data-tema-boton aria-label="Cambiar tema">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="contenido">
+            {% if messages %}
+            <div class="avisos">
+                {% for mensaje in messages %}
+                    <div class="aviso aviso--{{ mensaje.tags|default:'info' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            {% if 'error' in mensaje.tags %}
+                            <circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path>
+                            {% else %}
+                            <path d="M20 6 9 17l-5-5"></path>
+                            {% endif %}
+                        </svg>
+                        <span>{{ mensaje }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="pie">
+            <span>Club de Motociclistas &copy; <span data-anio>2026</span> &middot; Django + MongoDB</span>
+            <span class="pie__enlaces">
+                <a href="/api/">API JSON</a>
+                <a href="/api/esquemas/">Esquemas</a>
+                <a href="https://github.com/growing-ov/club-motociclistas" target="_blank" rel="noopener">GitHub</a>
+            </span>
+        </footer>
+    </div>
+</div>
+
+<script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>

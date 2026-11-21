@@ -1,45 +1,77 @@
 {% extends "base.html" %}
+{% load club %}
 
 {% block title %}Rodadas{% endblock %}
+{% block migas %}Eventos / Rodadas{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Rodadas</h2>
-    <a class="boton boton-primario" href="{% url 'rodada_create' %}">Nueva rodada</a>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Rodadas</h1>
+        <p class="pagina__descripcion">
+            Agenda de salidas grupales: punto de encuentro, destino, cupo disponible y
+            costo por participating.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--primario" href="{% url 'rodada_create' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Nueva rodada
+        </a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Nombre</th>
-            <th>Fecha de salida</th>
-            <th>Destino</th>
-            <th>Estado</th>
-            <th>Cupo</th>
-            <th>Distancia</th>
-            <th>Costo</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for rodada in object_list %}
-        <tr>
-            <td>{{ rodada.nombre }}</td>
-            <td>{{ rodada.fechaSalida|date:"d/m/Y H:i" }}</td>
-            <td>{{ rodada.destino }}</td>
-            <td>{{ rodada.get_estado_display }}</td>
-            <td>{{ rodada.cupoMaximo }}</td>
-            <td>{{ rodada.distanciaKm|default:"-" }} km</td>
-            <td>${{ rodada.costo|default:"-" }}</td>
-            <td class="acciones">
-                <a href="{% url 'rodada_detail' rodada.pk %}">Ver</a>
-                <a href="{% url 'rodada_update' rodada.pk %}">Editar</a>
-                <a href="{% url 'rodada_delete' rodada.pk %}">Eliminar</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="8" class="vacio">Sin rodadas programadas.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="panel">
+    <div class="panel__cabecera">
+        <span class="panel__titulo">{{ object_list|length }} rodada{% if object_list|length != 1 %}s{% endif %} en la agenda</span>
+        <input class="buscador" type="search" placeholder="Buscar por nombre o destino..." data-filtro="tabla-rodadas" aria-label="Buscar rodadas">
+    </div>
+    <div class="panel__cuerpo panel__cuerpo--plano">
+        <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-rodadas">
+                <thead>
+                    <tr>
+                        <th>Rodada</th>
+                        <th>Salida</th>
+                        <th>Destino</th>
+                        <th>Estado</th>
+                        <th>Cupo</th>
+                        <th>Distancia</th>
+                        <th>Costo</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for rodada in object_list %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'rodada_detail' rodada.pk %}">{{ rodada.nombre }}</a>
+                            <span class="tabla__secundario">{{ rodada.puntoEncuentro }}</span>
+                        </td>
+                        <td class="numeros">{{ rodada.fechaSalida|date:"d/m/Y H:i" }}</td>
+                        <td>{{ rodada.destino }}</td>
+                        <td><span class="pastilla {{ rodada.estado|estado_clase }}">{{ rodada.get_estado_display }}</span></td>
+                        <td class="numeros">{{ rodada.cupoMaximo }}</td>
+                        <td class="numeros">{{ rodada.distanciaKm|default:"-" }} km</td>
+                        <td class="numeros">$ {{ rodada.costo|moneda }}</td>
+                        <td>
+                            <div class="tabla__acciones">
+                                <a class="enlace-accion" href="{% url 'rodada_detail' rodada.pk %}">Ver</a>
+                                <a class="enlace-accion" href="{% url 'rodada_update' rodada.pk %}">Editar</a>
+                                <a class="enlace-accion enlace-accion--peligro" href="{% url 'rodada_delete' rodada.pk %}">Eliminar</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="8" class="vacio">
+                        <div class="vacio__icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg></div>
+                        <p class="vacio__titulo">Sin rodadas programadas</p>
+                        <p class="vacio__texto">Crea la primera salida grupal y abre las inscripciones a los socios.</p>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

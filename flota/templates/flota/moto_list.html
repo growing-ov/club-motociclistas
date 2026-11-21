@@ -1,55 +1,94 @@
 {% extends "base.html" %}
+{% load club %}
 
 {% block title %}Motos{% endblock %}
+{% block migas %}Flota / Motos{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Motos</h2>
-    <a class="boton boton-primario" href="{% url 'moto_create' %}">Nueva moto</a>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Motos</h1>
+        <p class="pagina__descripcion">
+            Parque de motos del club. Cada unidad referencia a su dueno con el
+            <code>ObjectId</code> en texto, sin relaciones en la base de datos.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--primario" href="{% url 'moto_create' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Nueva moto
+        </a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Placa</th>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>Anio</th>
-            <th>Tipo</th>
-            <th>Dueno</th>
-            <th>Foto</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for moto in object_list %}
-        <tr>
-            <td>{{ moto.placa }}</td>
-            <td>{{ moto.marca }}</td>
-            <td>{{ moto.modelo }}</td>
-            <td>{{ moto.anio }}</td>
-            <td>{{ moto.tipoMoto }}</td>
-            <td>
-                <a href="{% url 'motociclista_detail' moto.idMotociclista.pk %}">
-                    {{ moto.idMotociclista }}
-                </a>
-            </td>
-            <td>
-                {% if moto.fotoUrl %}
-                    <img class="mini" src="{{ moto.fotoUrl }}" alt="Foto de {{ moto.placa }}">
-                {% else %}
-                    -
-                {% endif %}
-            </td>
-            <td class="acciones">
-                <a href="{% url 'moto_detail' moto.pk %}">Ver</a>
-                <a href="{% url 'moto_update' moto.pk %}">Editar</a>
-                <a href="{% url 'moto_delete' moto.pk %}">Eliminar</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="8" class="vacio">Sin motos registradas.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="panel">
+    <div class="panel__cabecera">
+        <span class="panel__titulo">{{ object_list|length }} moto{% if object_list|length != 1 %}s{% endif %} en la flota</span>
+        <input class="buscador" type="search" placeholder="Buscar por placa, marca o modelo..." data-filtro="tabla-motos" aria-label="Buscar motos">
+    </div>
+    <div class="panel__cuerpo panel__cuerpo--plano">
+        <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-motos">
+                <thead>
+                    <tr>
+                        <th>Placa</th>
+                        <th>Moto</th>
+                        <th>Anio</th>
+                        <th>Tipo</th>
+                        <th>Dueno</th>
+                        <th>Foto</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for moto in object_list %}
+                    <tr>
+                        <td>
+                            <span class="tabla__principal mono">{{ moto.placa }}</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'moto_detail' moto.pk %}">{{ moto.marca }} {{ moto.modelo }}</a>
+                            <span class="tabla__secundario">
+                                {% if moto.cilindrada %}{{ moto.cilindrada }} cc{% else %}Sin cilindrada{% endif %}
+                                {% if moto.color %} &middot; {{ moto.color }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="numeros">{{ moto.anio }}</td>
+                        <td><span class="pastilla pastilla--neutro">{{ moto.tipoMoto }}</span></td>
+                        <td>
+                            {% with socio=socios|get:moto.idMotociclista %}
+                                {% if socio %}
+                                    <a href="{% url 'motociclista_detail' socio.pk %}">{{ socio.nombre }} {{ socio.apellido }}</a>
+                                {% else %}
+                                    <span class="pastilla pastilla--peligro">Sin dueno</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            {% if moto.fotoUrl %}
+                                <img class="miniatura" src="{{ moto.fotoUrl }}" alt="Foto de la moto {{ moto.placa }}" loading="lazy">
+                            {% else %}
+                                <span class="tenue">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="tabla__acciones">
+                                <a class="enlace-accion" href="{% url 'moto_detail' moto.pk %}">Ver</a>
+                                <a class="enlace-accion" href="{% url 'moto_update' moto.pk %}">Editar</a>
+                                <a class="enlace-accion enlace-accion--peligro" href="{% url 'moto_delete' moto.pk %}">Eliminar</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7" class="vacio">
+                        <div class="vacio__icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="17.5" r="3.5"></circle><circle cx="18.5" cy="17.5" r="3.5"></circle><path d="M12 17.5h-3M8.5 17.5 10 8h4l2.5 6.5"></path></svg></div>
+                        <p class="vacio__titulo">La flota esta vacia</p>
+                        <p class="vacio__texto">Registra la primera moto para controlar su mantenimiento y sus accidentes.</p>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

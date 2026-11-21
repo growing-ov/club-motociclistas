@@ -1,49 +1,93 @@
 {% extends "base.html" %}
+{% load club %}
 
 {% block title %}Inscripciones{% endblock %}
+{% block migas %}Eventos / Inscripciones{% endblock %}
 
 {% block content %}
-<div class="encabezado">
-    <h2>Inscripciones</h2>
-    <a class="boton boton-primario" href="{% url 'inscripcion_create' %}">Nueva inscripcion</a>
+<div class="pagina">
+    <div class="pagina__titulo">
+        <h1>Inscripciones</h1>
+        <p class="pagina__descripcion">
+            Participaciones de los socios en cada rodada. El cupo de cada salida se
+            valida al inscribir.
+        </p>
+    </div>
+    <div class="pagina__acciones">
+        <a class="boton boton--primario" href="{% url 'inscripcion_create' %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            Nueva inscripcion
+        </a>
+    </div>
 </div>
 
-<table>
-    <thead>
-        <tr>
-            <th>Motociclista</th>
-            <th>Rodada</th>
-            <th>Fecha de inscripcion</th>
-            <th>Asistio</th>
-            <th>Observaciones</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for inscripcion in object_list %}
-        <tr>
-            <td>
-                <a href="{% url 'motociclista_detail' inscripcion.idMotociclista.pk %}">
-                    {{ inscripcion.idMotociclista }}
-                </a>
-            </td>
-            <td>
-                <a href="{% url 'rodada_detail' inscripcion.idRodada.pk %}">
-                    {{ inscripcion.idRodada }}
-                </a>
-            </td>
-            <td>{{ inscripcion.fechaInscripcion|date:"d/m/Y" }}</td>
-            <td>{{ inscripcion.asistio|yesno:"Si,No" }}</td>
-            <td>{{ inscripcion.observaciones|default:"-" }}</td>
-            <td class="acciones">
-                <a href="{% url 'inscripcion_detail' inscripcion.pk %}">Ver</a>
-                <a href="{% url 'inscripcion_update' inscripcion.pk %}">Editar</a>
-                <a href="{% url 'inscripcion_delete' inscripcion.pk %}">Eliminar</a>
-            </td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="6" class="vacio">Sin inscripciones registradas.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="panel">
+    <div class="panel__cabecera">
+        <span class="panel__titulo">{{ object_list|length }} inscripcion{% if object_list|length != 1 %}es{% endif %} registrada{% if object_list|length != 1 %}s{% endif %}</span>
+        <input class="buscador" type="search" placeholder="Buscar por socio o rodada..." data-filtro="tabla-inscripciones" aria-label="Buscar inscripciones">
+    </div>
+    <div class="panel__cuerpo panel__cuerpo--plano">
+        <div class="tabla-envoltura">
+            <table class="tabla" id="tabla-inscripciones">
+                <thead>
+                    <tr>
+                        <th>Motociclista</th>
+                        <th>Rodada</th>
+                        <th>Fecha de inscripcion</th>
+                        <th>Asistio</th>
+                        <th>Observaciones</th>
+                        <th style="text-align:right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for inscripcion in object_list %}
+                    <tr>
+                        <td>
+                            {% with socio=socios|get:inscripcion.idMotociclista %}
+                                {% if socio %}
+                                    <a href="{% url 'motociclista_detail' socio.pk %}">{{ socio.nombre }} {{ socio.apellido }}</a>
+                                {% else %}
+                                    <span class="pastilla pastilla--peligro">Socio no encontrado</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            {% with rodada=rodadas|get:inscripcion.idRodada %}
+                                {% if rodada %}
+                                    <a href="{% url 'rodada_detail' rodada.pk %}">{{ rodada.nombre }}</a>
+                                    <span class="tabla__secundario">{{ rodada.fechaSalida|date:"d/m/Y" }}</span>
+                                {% else %}
+                                    <span class="pastilla pastilla--peligro">Rodada no encontrada</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td class="numeros">{{ inscripcion.fechaInscripcion|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if inscripcion.asistio %}
+                                <span class="pastilla pastilla--exito">Si</span>
+                            {% else %}
+                                <span class="pastilla pastilla--neutro">No</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ inscripcion.observaciones|default:"-" }}</td>
+                        <td>
+                            <div class="tabla__acciones">
+                                <a class="enlace-accion" href="{% url 'inscripcion_detail' inscripcion.pk %}">Ver</a>
+                                <a class="enlace-accion" href="{% url 'inscripcion_update' inscripcion.pk %}">Editar</a>
+                                <a class="enlace-accion enlace-accion--peligro" href="{% url 'inscripcion_delete' inscripcion.pk %}">Eliminar</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6" class="vacio">
+                        <div class="vacio__icono"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div>
+                        <p class="vacio__titulo">Sin inscripciones</p>
+                        <p class="vacio__texto">Las inscripciones de los socios a las rodadas apareceran aqui.</p>
+                    </td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}
