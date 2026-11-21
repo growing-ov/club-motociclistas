@@ -1,9 +1,14 @@
 from django import forms
 
+from club_motociclistas.campos import campo_referencia
+
 from .models import Accidente, Mantenimiento, Moto
+from socios.models import Motociclista
 
 
 class MotoForm(forms.ModelForm):
+    """Formulario de moto con selector de dueno sin relacion en la base."""
+
     class Meta:
         model = Moto
         fields = [
@@ -18,8 +23,18 @@ class MotoForm(forms.ModelForm):
             "idMotociclista",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["idMotociclista"] = campo_referencia(
+            Motociclista,
+            "Motociclista",
+            label="Motociclista (dueno)",
+        )
+
 
 class MantenimientoForm(forms.ModelForm):
+    """Formulario de mantenimiento con selector de moto sin relacion en la base."""
+
     class Meta:
         model = Mantenimiento
         fields = [
@@ -32,8 +47,14 @@ class MantenimientoForm(forms.ModelForm):
             "realizado",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["idMoto"] = campo_referencia(Moto, "Moto", label="Moto")
+
 
 class AccidenteForm(forms.ModelForm):
+    """Formulario de accidente con selector de moto sin relacion en la base."""
+
     class Meta:
         model = Accidente
         fields = [
@@ -44,3 +65,7 @@ class AccidenteForm(forms.ModelForm):
             "gravedad",
             "costoEstimado",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["idMoto"] = campo_referencia(Moto, "Moto", label="Moto")

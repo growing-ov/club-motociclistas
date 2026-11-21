@@ -2,6 +2,9 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from club_motociclistas import referencias
+from socios.models import Motociclista
+
 from .forms import AccidenteForm, MantenimientoForm, MotoForm
 from .models import GRAVEDADES, Accidente, Mantenimiento, Moto
 
@@ -13,8 +16,8 @@ def validar_moto(form):
     cilindrada = datos.get("cilindrada")
     if cilindrada is not None and not (50 <= cilindrada <= 2500):
         return ("cilindrada", "La cilindrada debe estar entre 50 y 2500")
-    dueno = datos["idMotociclista"]
-    motos = dueno.motos.all()
+    dueno_id = datos["idMotociclista"]
+    motos = referencias.motos_de(dueno_id)
     if form.instance.pk:
         motos = motos.exclude(pk=form.instance.pk)
     if motos.count() >= 3:
@@ -45,19 +48,29 @@ def validar_accidente(form):
 
 
 def lista_motos(request):
-    items = Moto.objects.select_related("idMotociclista").all().order_by("placa")
-    return render(request, "flota/moto_list.html", {"object_list": items})
+    items = Moto.objects.all().order_by("placa")
+    return render(
+        request,
+        "flota/moto_list.html",
+        {
+            "object_list": items,
+            "socios": referencias.mapa_por_id(
+                Motociclista, referencias.ids_de(items, "idMotociclista")
+            ),
+        },
+    )
 
 
 def ver_moto(request, pk):
-    obj = get_object_or_404(Moto.objects.select_related("idMotociclista"), pk=pk)
+    obj = get_object_or_404(Moto, pk=pk)
     return render(
         request,
         "flota/moto_detail.html",
         {
             "object": obj,
-            "mantenimientos": obj.mantenimientos.all().order_by("-fecha"),
-            "accidentes": obj.accidentes.all().order_by("-fecha"),
+            "dueno": referencias.por_id(Motociclista, obj.idMotociclista),
+            "mantenimientos": referencias.mantenimientos_de(obj.pk),
+            "accidentes": referencias.accidentes_de(obj.pk),
         },
     )
 
@@ -90,8 +103,14 @@ def editar_moto(request, pk):
 def eliminar_moto(request, pk):
     obj = get_object_or_404(Moto, pk=pk)
     if request.method == "POST":
-        if obj.mantenimientos.exists() or obj.accidentes.exists():
-            messages.error(request, "No se puede eliminar: tiene mantenimientos o accidentes registrados.")
+        tiene_mantenimientos = referencias.existe_referencia(
+            Mantenimiento, "idMoto", obj.pk
+        )
+        tiene_accidentes = referencias.existe_referencia(Accidente, "idMoto", obj.pk)
+        if tiene_mantenimientos or tiene_accidentes:
+            messages.error(
+                request, "No se puede eliminar: tiene mantenimientos o accidentes registrados."
+            )
         else:
             obj.delete()
             messages.success(request, "Moto eliminada correctamente.")
@@ -100,16 +119,28 @@ def eliminar_moto(request, pk):
 
 
 def lista_mantenimientos(request):
-    items = Mantenimiento.objects.select_related("idMoto").all().order_by("-fecha")
-    return render(request, "flota/mantenimiento_list.html", {"object_list": items})
+    items = Mantenimiento.objects.all().order_by("-fecha")
+    return render(
+        request,
+        "flota/mantenimiento_list.html",
+        {
+            "object_list": items,
+            "motos": referencias.mapa_por_id(
+                Moto, referencias.ids_de(items, "idMoto")
+            ),
+        },
+    )
 
 
 def ver_mantenimiento(request, pk):
-    obj = get_object_or_404(Mantenimiento.objects.select_related("idMoto"), pk=pk)
+    obj = get_object_or_404(Mantenimiento, pk=pk)
     return render(
         request,
         "flota/mantenimiento_detail.html",
-        {"object": obj, "moto": obj.idMoto},
+        {
+            "object": obj,
+            "moto": referencias.por_id(Moto, obj.idMoto),
+        },
     )
 
 
@@ -148,16 +179,28 @@ def eliminar_mantenimiento(request, pk):
 
 
 def lista_accidentes(request):
-    items = Accidente.objects.select_related("idMoto").all().order_by("-fecha")
-    return render(request, "flota/accidente_list.html", {"object_list": items})
+    items = Accidente.objects.all().order_by("-fecha")
+    return render(
+        request,
+        "flota/accidente_list.html",
+        {
+            "object_list": items,
+            "motos": referencias.mapa_por_id(
+                Moto, referencias.ids_de(items, "idMoto")
+            ),
+        },
+    )
 
 
 def ver_accidente(request, pk):
-    obj = get_object_or_404(Accidente.objects.select_related("idMoto"), pk=pk)
+    obj = get_object_or_404(Accidente, pk=pk)
     return render(
         request,
         "flota/accidente_detail.html",
-        {"object": obj, "moto": obj.idMoto},
+        {
+            "object": obj,
+            "moto": referencias.por_id(Moto, obj.idMoto),
+        },
     )
 
 

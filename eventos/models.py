@@ -1,7 +1,7 @@
 from django.core.validators import URLValidator
 from django.db import models
 
-from socios.models import Motociclista
+from club_motociclistas.referencias import LONGITUD_ID
 
 VALIDADORES_URL = [URLValidator(schemes=["http", "https"])]
 
@@ -31,15 +31,21 @@ class Rodada(models.Model):
 
 
 class Inscripcion(models.Model):
-    idMotociclista = models.ForeignKey(
-        Motociclista,
-        on_delete=models.CASCADE,
-        related_name="inscripciones",
+    """Inscripcion de un socio a una rodada.
+
+    ``idMotociclista`` y ``idRodada`` son referencias sin relacion: guardan
+    los ObjectId en texto, indexados para buscar rapido.
+    """
+
+    idMotociclista = models.CharField(
+        max_length=LONGITUD_ID,
+        db_index=True,
+        verbose_name="Motociclista",
     )
-    idRodada = models.ForeignKey(
-        Rodada,
-        on_delete=models.CASCADE,
-        related_name="inscripciones",
+    idRodada = models.CharField(
+        max_length=LONGITUD_ID,
+        db_index=True,
+        verbose_name="Rodada",
     )
     fechaInscripcion = models.DateTimeField()
     asistio = models.BooleanField(default=False)
@@ -54,10 +60,16 @@ class Inscripcion(models.Model):
 
 
 class Galeria(models.Model):
-    idRodada = models.ForeignKey(
-        Rodada,
-        on_delete=models.CASCADE,
-        related_name="galeria",
+    """Foto de la galeria de una rodada.
+
+    ``idRodada`` es una referencia sin relacion: guarda el ObjectId de la
+    rodada en texto, indexado para buscar rapido.
+    """
+
+    idRodada = models.CharField(
+        max_length=LONGITUD_ID,
+        db_index=True,
+        verbose_name="Rodada",
     )
     titulo = models.CharField(max_length=150)
     descripcion = models.TextField(blank=True, null=True)

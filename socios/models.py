@@ -1,6 +1,8 @@
 from django.core.validators import URLValidator
 from django.db import models
 
+from club_motociclistas.referencias import LONGITUD_ID
+
 VALIDADORES_URL = [URLValidator(schemes=["http", "https"])]
 
 
@@ -28,6 +30,12 @@ class Motociclista(models.Model):
 
 
 class DocumentoSocio(models.Model):
+    """Documento de un socio.
+
+    ``idMotociclista`` es una referencia sin relacion: guarda el ObjectId
+    del socio en texto, indexado para buscar rapido.
+    """
+
     nombreDocumento = models.CharField(max_length=80)
     numeroDocumento = models.CharField(max_length=60)
     fechaEmision = models.DateField()
@@ -38,10 +46,10 @@ class DocumentoSocio(models.Model):
         null=True,
         validators=VALIDADORES_URL,
     )
-    idMotociclista = models.ForeignKey(
-        Motociclista,
-        on_delete=models.CASCADE,
-        related_name="documentos",
+    idMotociclista = models.CharField(
+        max_length=LONGITUD_ID,
+        db_index=True,
+        verbose_name="Motociclista",
     )
 
     def __str__(self):

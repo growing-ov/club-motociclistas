@@ -1,5 +1,7 @@
 from django import forms
 
+from club_motociclistas.campos import campo_referencia
+
 from .models import DocumentoSocio, Motociclista
 
 
@@ -19,6 +21,8 @@ class MotociclistaForm(forms.ModelForm):
 
 
 class DocumentoSocioForm(forms.ModelForm):
+    """Formulario de documento con selector de socio sin relacion en la base."""
+
     class Meta:
         model = DocumentoSocio
         fields = [
@@ -29,3 +33,11 @@ class DocumentoSocioForm(forms.ModelForm):
             "archivoUrl",
             "idMotociclista",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["idMotociclista"] = campo_referencia(
+            Motociclista,
+            "Motociclista",
+            label="Motociclista",
+        )

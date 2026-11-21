@@ -3,8 +3,12 @@ from datetime import date
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 
+from club_motociclistas import referencias
+from eventos.models import Inscripcion, Rodada
+from flota.models import Moto
+from socios.models import DocumentoSocio, Motociclista
+
 from .forms import DocumentoSocioForm, MotociclistaForm
-from .models import DocumentoSocio, Motociclista
 
 
 def validar_motociclista(form):
@@ -30,15 +34,17 @@ def lista_motociclistas(request):
 
 def ver_motociclista(request, pk):
     obj = get_object_or_404(Motociclista, pk=pk)
+    inscripciones = referencias.inscripciones_de_socio(obj.pk)
     return render(
         request,
         "socios/motociclista_detail.html",
         {
             "object": obj,
-            "motos": obj.motos.all().order_by("placa"),
-            "documentos": obj.documentos.all().order_by("-fechaEmision"),
-            "inscripciones": obj.inscripciones.select_related("idRodada").all().order_by(
-                "-fechaInscripcion"
+            "motos": referencias.motos_de(obj.pk),
+            "documentos": referencias.documentos_de(obj.pk),
+            "inscripciones": inscripciones,
+            "rodadas": referencias.mapa_por_id(
+                Rodada, referencias.ids_de(inscripciones, "idRodada")
             ),
         },
     )
@@ -72,7 +78,16 @@ def editar_motociclista(request, pk):
 def eliminar_motociclista(request, pk):
     obj = get_object_or_404(Motociclista, pk=pk)
     if request.method == "POST":
-        if obj.motos.exists() or obj.inscripciones.exists() or obj.documentos.exists():
+        tiene_motos = referencias.existe_referencia(Moto, "idMotociclista", obj.pk)
+        tiene_documentos = referencias.existe_referencia(
+            DocumentoSocio, "idMotociclista", obj.pk
+        )
+        tiene_inscripciones = referencias.existe_referencia(
+            Inscripcion,
+            "idMotociclista",
+            obj.pk,
+        )
+        if tiene_motos or tiene_documentos or tiene_inscripciones:
             messages.error(
                 request,
                 "No se puede eliminar: tiene motos, inscripciones o documentos asociados.",
@@ -85,18 +100,28 @@ def eliminar_motociclista(request, pk):
 
 
 def lista_documentos(request):
-    items = DocumentoSocio.objects.select_related("idMotociclista").all().order_by(
-        "-fechaEmision"
+    items = DocumentoSocio.objects.all().order_by("-fechaEmision")
+    return render(
+        request,
+        "socios/documento_list.html",
+        {
+            "object_list": items,
+            "socios": referencias.mapa_por_id(
+                Motociclista, referencias.ids_de(items, "idMotociclista")
+            ),
+        },
     )
-    return render(request, "socios/documento_list.html", {"object_list": items})
 
 
 def ver_documento(request, pk):
-    obj = get_object_or_404(DocumentoSocio.objects.select_related("idMotociclista"), pk=pk)
+    obj = get_object_or_404(DocumentoSocio, pk=pk)
     return render(
         request,
         "socios/documento_detail.html",
-        {"object": obj, "socio": obj.idMotociclista},
+        {
+            "object": obj,
+            "socio": referencias.por_id(Motociclista, obj.idMotociclista),
+        },
     )
 
 

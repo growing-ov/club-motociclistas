@@ -2,6 +2,10 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from club_motociclistas import referencias
+from flota.models import Moto
+from socios.models import Motociclista
+
 from .forms import GaleriaForm, InscripcionForm, RodadaForm
 from .models import Galeria, Inscripcion, Rodada
 
@@ -24,17 +28,19 @@ def validar_rodada(form):
 
 def validar_inscripcion(form):
     datos = form.cleaned_data
-    rodada = datos["idRodada"]
+    rodada = referencias.por_id(Rodada, datos["idRodada"])
+    if rodada is None:
+        return ("idRodada", "La rodada seleccionada no existe")
     if rodada.fechaSalida and rodada.fechaSalida <= timezone.now():
         return ("idRodada", "La rodada ya paso")
-    inscritos = rodada.inscripciones.all()
+    inscritos = referencias.inscripciones_de_rodada(rodada.pk)
     if form.instance.pk:
         inscritos = inscritos.exclude(pk=form.instance.pk)
     if inscritos.count() >= rodada.cupoMaximo:
         return ("idRodada", "El cupo de la rodada ya esta lleno")
     repetidas = Inscripcion.objects.filter(
         idMotociclista=datos["idMotociclista"],
-        idRodada=rodada,
+        idRodada=rodada.pk,
     )
     if form.instance.pk:
         repetidas = repetidas.exclude(pk=form.instance.pk)
@@ -50,15 +56,18 @@ def lista_rodadas(request):
 
 def ver_rodada(request, pk):
     obj = get_object_or_404(Rodada, pk=pk)
+    inscripciones = referencias.inscripciones_de_rodada(obj.pk)
     return render(
         request,
         "eventos/rodada_detail.html",
         {
             "object": obj,
-            "inscripciones": obj.inscripciones.select_related("idMotociclista").all().order_by(
-                "fechaInscripcion"
+            "inscripciones": inscripciones,
+            "galeria": referencias.galeria_de_rodada(obj.pk),
+            "cupo_disponible": max(obj.cupoMaximo - len(inscripciones), 0),
+            "socios": referencias.mapa_por_id(
+                Motociclista, referencias.ids_de(inscripciones, "idMotociclista")
             ),
-            "galeria": obj.galeria.all().order_by("-fechaSubida"),
         },
     )
 
@@ -91,7 +100,11 @@ def editar_rodada(request, pk):
 def eliminar_rodada(request, pk):
     obj = get_object_or_404(Rodada, pk=pk)
     if request.method == "POST":
-        if obj.inscripciones.exists() or obj.galeria.exists():
+        tiene_inscripciones = referencias.existe_referencia(
+            Inscripcion, "idRodada", obj.pk
+        )
+        tiene_fotos = referencias.existe_referencia(Galeria, "idRodada", obj.pk)
+        if tiene_inscripciones or tiene_fotos:
             messages.error(request, "No se puede eliminar: tiene inscripciones o fotos.")
         else:
             obj.delete()
@@ -101,21 +114,32 @@ def eliminar_rodada(request, pk):
 
 
 def lista_inscripciones(request):
-    items = Inscripcion.objects.select_related("idMotociclista", "idRodada").all().order_by(
-        "-fechaInscripcion"
+    items = Inscripcion.objects.all().order_by("-fechaInscripcion")
+    return render(
+        request,
+        "eventos/inscripcion_list.html",
+        {
+            "object_list": items,
+            "socios": referencias.mapa_por_id(
+                Motociclista, referencias.ids_de(items, "idMotociclista")
+            ),
+            "rodadas": referencias.mapa_por_id(
+                Rodada, referencias.ids_de(items, "idRodada")
+            ),
+        },
     )
-    return render(request, "eventos/inscripcion_list.html", {"object_list": items})
 
 
 def ver_inscripcion(request, pk):
-    obj = get_object_or_404(
-        Inscripcion.objects.select_related("idMotociclista", "idRodada"),
-        pk=pk,
-    )
+    obj = get_object_or_404(Inscripcion, pk=pk)
     return render(
         request,
         "eventos/inscripcion_detail.html",
-        {"object": obj, "socio": obj.idMotociclista, "rodada": obj.idRodada},
+        {
+            "object": obj,
+            "socio": referencias.por_id(Motociclista, obj.idMotociclista),
+            "rodada": referencias.por_id(Rodada, obj.idRodada),
+        },
     )
 
 
@@ -154,16 +178,28 @@ def eliminar_inscripcion(request, pk):
 
 
 def lista_galeria(request):
-    items = Galeria.objects.select_related("idRodada").all().order_by("-fechaSubida")
-    return render(request, "eventos/galeria_list.html", {"object_list": items})
+    items = Galeria.objects.all().order_by("-fechaSubida")
+    return render(
+        request,
+        "eventos/galeria_list.html",
+        {
+            "object_list": items,
+            "rodadas": referencias.mapa_por_id(
+                Rodada, referencias.ids_de(items, "idRodada")
+            ),
+        },
+    )
 
 
 def ver_galeria(request, pk):
-    obj = get_object_or_404(Galeria.objects.select_related("idRodada"), pk=pk)
+    obj = get_object_or_404(Galeria, pk=pk)
     return render(
         request,
         "eventos/galeria_detail.html",
-        {"object": obj, "rodada": obj.idRodada},
+        {
+            "object": obj,
+            "rodada": referencias.por_id(Rodada, obj.idRodada),
+        },
     )
 
 

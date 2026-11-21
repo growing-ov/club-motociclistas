@@ -1,7 +1,7 @@
 from django.core.validators import URLValidator
 from django.db import models
 
-from socios.models import Motociclista
+from club_motociclistas.referencias import LONGITUD_ID
 
 VALIDADORES_URL = [URLValidator(schemes=["http", "https"])]
 
@@ -13,6 +13,12 @@ GRAVEDADES = (
 
 
 class Moto(models.Model):
+    """Moto de un socio.
+
+    ``idMotociclista`` es una referencia sin relacion: guarda el ObjectId
+    del dueno en texto, indexado para buscar rapido.
+    """
+
     placa = models.CharField(max_length=10, unique=True)
     marca = models.CharField(max_length=80)
     modelo = models.CharField(max_length=80)
@@ -26,10 +32,10 @@ class Moto(models.Model):
         null=True,
         validators=VALIDADORES_URL,
     )
-    idMotociclista = models.ForeignKey(
-        Motociclista,
-        on_delete=models.CASCADE,
-        related_name="motos",
+    idMotociclista = models.CharField(
+        max_length=LONGITUD_ID,
+        db_index=True,
+        verbose_name="Motociclista",
     )
 
     def __str__(self):
@@ -41,10 +47,16 @@ class Moto(models.Model):
 
 
 class Mantenimiento(models.Model):
-    idMoto = models.ForeignKey(
-        Moto,
-        on_delete=models.CASCADE,
-        related_name="mantenimientos",
+    """Mantenimiento de una moto.
+
+    ``idMoto`` es una referencia sin relacion: guarda el ObjectId de la
+    moto en texto, indexado para buscar rapido.
+    """
+
+    idMoto = models.CharField(
+        max_length=LONGITUD_ID,
+        db_index=True,
+        verbose_name="Moto",
     )
     fecha = models.DateTimeField()
     tipo = models.CharField(max_length=80)
@@ -62,10 +74,16 @@ class Mantenimiento(models.Model):
 
 
 class Accidente(models.Model):
-    idMoto = models.ForeignKey(
-        Moto,
-        on_delete=models.CASCADE,
-        related_name="accidentes",
+    """Accidente de una moto.
+
+    ``idMoto`` es una referencia sin relacion: guarda el ObjectId de la
+    moto en texto, indexado para buscar rapido.
+    """
+
+    idMoto = models.CharField(
+        max_length=LONGITUD_ID,
+        db_index=True,
+        verbose_name="Moto",
     )
     fecha = models.DateTimeField()
     descripcion = models.TextField()
