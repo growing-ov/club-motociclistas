@@ -181,6 +181,28 @@ code, pre, .mono {
     min-height: 100vh;
 }
 
+/* --- Velo (capa oscurecida tras el menu lateral) ------------------------ */
+/* Debe quedar fuera de la media query: si no, en escritorio el div se
+   posiciona de forma estatica y ocupa una celda del grid .app, empujando
+   el contenido principal fuera de la pantalla. */
+.velo {
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    background: rgba(4, 8, 18, 0.55);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--normal), visibility var(--normal);
+}
+
+.velo.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
 /* --- Barra lateral ------------------------------------------------------ */
 .lateral {
     position: sticky;
