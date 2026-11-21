@@ -3,9 +3,8 @@ from datetime import date
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 
-from club_motociclistas import referencias
-from eventos.models import Inscripcion, Rodada
-from flota.models import Moto
+from club_motociclistas import cascada, referencias
+from eventos.models import Rodada
 from socios.models import DocumentoSocio, Motociclista
 
 from .forms import DocumentoSocioForm, MotociclistaForm
@@ -77,26 +76,16 @@ def editar_motociclista(request, pk):
 
 def eliminar_motociclista(request, pk):
     obj = get_object_or_404(Motociclista, pk=pk)
+    plan = cascada.plan_para("motociclista", obj)
     if request.method == "POST":
-        tiene_motos = referencias.existe_referencia(Moto, "idMotociclista", obj.pk)
-        tiene_documentos = referencias.existe_referencia(
-            DocumentoSocio, "idMotociclista", obj.pk
-        )
-        tiene_inscripciones = referencias.existe_referencia(
-            Inscripcion,
-            "idMotociclista",
-            obj.pk,
-        )
-        if tiene_motos or tiene_documentos or tiene_inscripciones:
-            messages.error(
-                request,
-                "No se puede eliminar: tiene motos, inscripciones o documentos asociados.",
-            )
-        else:
-            obj.delete()
-            messages.success(request, "Motociclista eliminado correctamente.")
-            return redirect("motociclista_list")
-    return render(request, "socios/motociclista_confirm_delete.html", {"object": obj})
+        cascada.aplicar(plan)
+        messages.success(request, plan.mensaje_exito())
+        return redirect("motociclista_list")
+    return render(
+        request,
+        "socios/motociclista_confirm_delete.html",
+        {"object": obj, "plan": plan},
+    )
 
 
 def lista_documentos(request):
@@ -152,11 +141,13 @@ def editar_documento(request, pk):
 
 def eliminar_documento(request, pk):
     obj = get_object_or_404(DocumentoSocio, pk=pk)
+    plan = cascada.plan_para("documento", obj)
     if request.method == "POST":
-        if obj.fechaVencimiento and obj.fechaVencimiento >= date.today():
-            messages.error(request, "No se puede eliminar un documento vigente.")
-        else:
-            obj.delete()
-            messages.success(request, "Documento eliminado correctamente.")
-            return redirect("documento_list")
-    return render(request, "socios/documento_confirm_delete.html", {"object": obj})
+        cascada.aplicar(plan)
+        messages.success(request, plan.mensaje_exito())
+        return redirect("documento_list")
+    return render(
+        request,
+        "socios/documento_confirm_delete.html",
+        {"object": obj, "plan": plan},
+    )

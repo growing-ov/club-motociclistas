@@ -2,8 +2,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from club_motociclistas import referencias
-from flota.models import Moto
+from club_motociclistas import cascada, referencias
 from socios.models import Motociclista
 
 from .forms import GaleriaForm, InscripcionForm, RodadaForm
@@ -99,18 +98,16 @@ def editar_rodada(request, pk):
 
 def eliminar_rodada(request, pk):
     obj = get_object_or_404(Rodada, pk=pk)
+    plan = cascada.plan_para("rodada", obj)
     if request.method == "POST":
-        tiene_inscripciones = referencias.existe_referencia(
-            Inscripcion, "idRodada", obj.pk
-        )
-        tiene_fotos = referencias.existe_referencia(Galeria, "idRodada", obj.pk)
-        if tiene_inscripciones or tiene_fotos:
-            messages.error(request, "No se puede eliminar: tiene inscripciones o fotos.")
-        else:
-            obj.delete()
-            messages.success(request, "Rodada eliminada correctamente.")
-            return redirect("rodada_list")
-    return render(request, "eventos/rodada_confirm_delete.html", {"object": obj})
+        cascada.aplicar(plan)
+        messages.success(request, plan.mensaje_exito())
+        return redirect("rodada_list")
+    return render(
+        request,
+        "eventos/rodada_confirm_delete.html",
+        {"object": obj, "plan": plan},
+    )
 
 
 def lista_inscripciones(request):

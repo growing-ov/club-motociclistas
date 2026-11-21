@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from club_motociclistas import referencias
+from club_motociclistas import cascada, referencias
 from socios.models import Motociclista
 
 from .forms import AccidenteForm, MantenimientoForm, MotoForm
@@ -102,20 +102,16 @@ def editar_moto(request, pk):
 
 def eliminar_moto(request, pk):
     obj = get_object_or_404(Moto, pk=pk)
+    plan = cascada.plan_para("moto", obj)
     if request.method == "POST":
-        tiene_mantenimientos = referencias.existe_referencia(
-            Mantenimiento, "idMoto", obj.pk
-        )
-        tiene_accidentes = referencias.existe_referencia(Accidente, "idMoto", obj.pk)
-        if tiene_mantenimientos or tiene_accidentes:
-            messages.error(
-                request, "No se puede eliminar: tiene mantenimientos o accidentes registrados."
-            )
-        else:
-            obj.delete()
-            messages.success(request, "Moto eliminada correctamente.")
-            return redirect("moto_list")
-    return render(request, "flota/moto_confirm_delete.html", {"object": obj})
+        cascada.aplicar(plan)
+        messages.success(request, plan.mensaje_exito())
+        return redirect("moto_list")
+    return render(
+        request,
+        "flota/moto_confirm_delete.html",
+        {"object": obj, "plan": plan},
+    )
 
 
 def lista_mantenimientos(request):

@@ -13,10 +13,7 @@
 
 <div class="panel">
     <div class="panel__cuerpo">
-        <div class="aviso aviso--warning">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></svg>
-            <span>Solo se puede eliminar una moto que no tenga mantenimientos ni accidentes registrados.</span>
-        </div>
+        {% include "includes/cascada.html" with plan=plan %}
 
         <div class="datos mt-4 mb-4">
             <div class="datos__fila">
@@ -29,12 +26,12 @@
             </div>
         </div>
 
-        <form method="post" data-confirmar="Se eliminara la moto {{ object.placa }}. Continuar?">
+        <form method="post" data-confirmar="{% if plan.total %}Se eliminara la moto {{ object.placa }} y {{ plan.total }} registro{% if plan.total != 1 %}s{% endif %} asociado{% if plan.total != 1 %}s{% endif %} en cascada ({{ plan.resumen }}). Continuar?{% else %}Se eliminara la moto {{ object.placa }}. Continuar?{% endif %}">
             {% csrf_token %}
             <div class="formulario__pie">
                 <button class="boton boton--peligro" type="submit">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
-                    Si, eliminar definitivamente
+                    {% if plan.total %}Si, eliminar en cascada ({{ plan.total }}){% else %}Si, eliminar definitivamente{% endif %}
                 </button>
                 <a class="boton boton--fantasma" href="{% url 'moto_list' %}">Mejor no</a>
             </div>

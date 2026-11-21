@@ -184,69 +184,28 @@ whitenoise>=6.7
 
 El proyecto sigue el patrón **MVC** de Django con vistas por función (FBV). La separación de responsabilidades es estrictamente vertical: cada app es autocontenida en modelos, formularios, vistas, URLs y plantillas.
 
-```
-+-----------------------------------------------------------------------+
-|                          CAPA DE PRESENTACIÓN                        |
-|  templates/base.html  ·  templates/dashboard.html                   |
-|  templates/includes/formulario.html                                   |
-|  socios/templates/socios/*.html  ·  flota/templates/flota/*.html    |
-|  eventos/templates/eventos/*.html                                    |
-|  static/css/estilos.css  ·  static/js/app.js                        |
-+-----------------------------------------------------------------------+
-              |  render(request, ...)  ·  {% url %}  ·  {% block content %}
-              v
-+-----------------------------------------------------------------------+
-|                       CAPA DE VISTAS (FBV)                           |
-|  club_motociclistas/views.py     -> dashboard                        |
-|  club_motociclistas/api.py       -> indice, coleccion, documento,    |
-|                                     esquemas, esquema                |
-|  socios/views.py   flota/views.py   eventos/views.py                 |
-|  patron: ModelForm(request.POST or None) -> validar_<modelo>(form)   |
-|           -> form.add_error(*error) | form.save()                   |
-|           -> messages.success() -> redirect()                        |
-+-----------------------------------------------------------------------+
-              |  form.is_valid()  ·  cleaned_data  ·  save()
-              v
-+-----------------------------------------------------------------------+
-|                    CAPA DE FORMULARIOS (ModelForm)                   |
-|  socios/forms.py   flota/forms.py   eventos/forms.py                 |
-|  club_motociclistas/campos.py -> campo_referencia() /               |
-|                                    ReferenciaModelChoiceField        |
-+-----------------------------------------------------------------------+
-              |
-              v
-+-----------------------------------------------------------------------+
-|                   CAPA DE DOMINIO / MODELOS                          |
-|  socios/models.py    -> Motociclista, DocumentoSocio                 |
-|  flota/models.py     -> Moto, Mantenimiento, Accidente              |
-|  eventos/models.py   -> Rodada, Inscripcion, Galeria                 |
-|  SIN ForeignKey: referencias por ObjectId en texto (CharField)      |
-+-----------------------------------------------------------------------+
-              |
-              v
-+-----------------------------------------------------------------------+
-|        CAPA DE INFRAESTRUCTURA (nucleo) + ORM django-mongodb-backend |
-|  nucleo/esquemas.py       -> carga de JSON Schemas, validacion      |
-|  nucleo/serializadores.py -> conversion modelo -> JSON de esquema   |
-|  nucleo/templatetags/club.py -> filtros de plantilla (get, vigente, |
-|                                 iniciales, moneda, estado_clase,    |
-|                                 gravedad_clase)                     |
-|  nucleo/management/commands/ -> seed_data, validar_esquemas,        |
-|                                 exportar_datos                      |
-|  club_motociclistas/referencias.py -> resolucion de referencias     |
-|  club_motociclistas/settings.py    -> configuracion, .env, MongoDB  |
-+-----------------------------------------------------------------------+
-              |
-              v
-+-----------------------------------------------------------------------+
-|                        MongoDB (mongod / Atlas)                      |
-|  colecciones: socios_motociclista, socios_documentosocio,           |
-|               flota_moto, flota_mantenimiento, flota_accidente,     |
-|               eventos_rodada, eventos_inscripcion, eventos_galeria   |
-+-----------------------------------------------------------------------+
-```
+![Arquitectura por capas de la aplicación Django](diagramas/01-arquitectura-capas.png)
+
+*Figura 1. Arquitectura por capas del Club de Motociclistas: de la presentación
+(plantillas y estáticos) al almacenamiento en MongoDB, pasando por las vistas
+por función, los formularios `ModelForm` y los modelos sin claves foráneas.*
+
+| Capa | Ubicación | Responsabilidad |
+|---|---|---|
+| Presentación | `templates/`, `static/css/estilos.css`, `static/js/app.js` | HTML, CSS y JavaScript; `{% url %}`, `{% block content %}` |
+| Vistas (FBV) | `club_motociclistas/views.py`, `club_motociclistas/api.py`, `socios/views.py`, `flota/views.py`, `eventos/views.py` | Orquestan la petición: validan, guardan, avisan y redirigen |
+| Formularios | `socios/forms.py`, `flota/forms.py`, `eventos/forms.py`, `club_motociclistas/campos.py` | `ModelForm` y campos de referencia entre colecciones |
+| Modelos | `socios/models.py`, `flota/models.py`, `eventos/models.py` | Colecciones de MongoDB; **sin** `ForeignKey` (referencias por `ObjectId` en texto) |
+| Infraestructura | `nucleo/`, `club_motociclistas/settings.py`, `club_motociclistas/referencias.py` | Esquemas JSON, serializadores, templatetags y comandos de gestión |
+| Datos | MongoDB (Atlas) | `socios_motociclista`, `socios_documentosocio`, `flota_moto`, `flota_mantenimiento`, `flota_accidente`, `eventos_rodada`, `eventos_inscripcion`, `eventos_galeria` |
 
 ### 4.2 Flujo de una petición (ejemplo: crear una moto)
+
+![Flujo de una petición HTTP desde el navegador hasta MongoDB](diagramas/02-flujo-peticion.png)
+
+*Figura 2. Recorrido de una petición: navegador -> middleware -> resolución de
+URL -> vista -> formulario -> ORM (`django-mongodb-backend` + `pymongo`) ->
+MongoDB -> respuesta 302 (éxito) o 200 con el error de negocio bajo el campo.*
 
 ```
 Navegador
@@ -277,38 +236,12 @@ Navegador
 
 ### 4.3 Diagrama de aplicaciones y dependencias entre ellas
 
-```
-                    +-----------------------------------+
-                    |     club_motociclistas            |
-                    |  (paquete de configuracion)      |
-                    |  settings · urls · views         |
-                    |  api · campos · referencias      |
-                    |  asgi · wsgi                     |
-                    +-----------------------------------+
-                       |        |        |        |
-        +--------------+        |        |        +------------------+
-        |                       |        |                           |
-        v                       v        v                           v
-+---------------+     +---------------+  |            +----------------------+
-|     nucleo    |     |    socios     |  |            |  schemas/ (JSON)      |
-|---------------|     |---------------|  |            |  base, moto, rodada,  |
-| esquemas.py   |     | models.py    |  |            |  galeria, ...         |
-| serializadores|     | forms.py     |  |            +----------------------+
-| templatetags/ |     | views.py     |  |                      ^
-| management/    |     | urls.py      |  |                      |
-+---------------+     +---------------+  |            +----------------------+
-        |                                |            |     eventos          |
-        |  importa (COLECCIONES)          +---------->| models/forms/views/  |
-        |                                |            | urls + templates     |
-        |  importa (apps.get_model)      |            +----------------------+
-        +--------------------------------+                        ^
-                                                                 |
-                    +-----------------------------------+        |
-                    |                flota               |--------+
-                    |  models.py · forms.py · views.py   |
-                    |  urls.py + templates/flota/        |
-                    +-----------------------------------+
-```
+![Diagrama de aplicaciones y dependencias entre paquetes](diagramas/10-apps-dependencias.png)
+
+*Figura 3. Dependencias entre paquetes: `club_motociclistas` (configuración)
+importa de `nucleo`, `socios`, `flota` y `eventos`; `nucleo` no importa modelos
+a nivel de módulo (usa `apps.get_model` en tiempo de ejecución) y ninguna app
+depende de otra en sus `models.py`.*
 
 **Reglas de dependencia efectivas:**
 
@@ -321,46 +254,20 @@ Navegador
 
 ### 4.4 Arquitectura de contenedores y contexto de ejecución
 
-```
-+=====================================================================+
-|  CONTENEDOR: club-motociclistas-web                                |
-|                                                                     |
-|  USER appuser (uid 10001, sin privilegios)                          |
-|                                                                     |
-|  +---------------------------------------------------------------+  |
-|  | entrypoint.sh                                                   |  |
-|  |  1. espera a que MongoDB acepte conexiones (ESPERA_MONGO, 60 s)|  |
-|  |  2. python manage.py collectstatic --noinput                  |  |
-|  |  3. python manage.py migrate --noinput  (no-op en MongoDB)     |  |
-|  |  4. exec "$@"  ->  gunicorn                                    |  |
-|  +-------------------------------+-------------------------------+  |
-|                                  |                                  |
-|                                  v                                  |
-|  +---------------------------------------------------------------+  |
-|  | gunicorn  club_motociclistas.wsgi:application                  |  |
-|  |   --bind 0.0.0.0:8000 --workers 3 --timeout 120                |  |
-|  +-------------------------------+-------------------------------+  |
-|                                  |                                  |
-|          +-----------------------+------------------------+         |
-|          |  Django 6.1 (WSGI)                            |         |
-|          |   MIDDLEWARE -> URLconf -> FBV -> ModelForm   |         |
-|          |   -> ORM django-mongodb-backend -> pymongo     |         |
-|          +-----------------------+------------------------+         |
-|                                  |                                  |
-|          +-----------------------+------------------------+         |
-|          |  WhiteNoise  (estaticos comprimidos + manifiesto)|       |
-|          +-----------------------+------------------------+         |
-|                                  |                                  |
-|  EXPOSE 8000   HEALTHCHECK -> http://127.0.0.1:8000/api/esquemas/ |
-+=====================================================================+
-                                    |
-                                    |  MONGO_URI=mongodb+srv://... (Atlas)
-                                    v
-+=====================================================================+
-|  SERVICIO EXTERNO: MongoDB Atlas                                 |
-|  cluster <-> TLS                                                  |
-+=====================================================================+
-```
+![Arquitectura del contenedor: build multi-etapa, imagen final y MongoDB Atlas](diagramas/03-arquitectura-docker.png)
+
+*Figura 4. Construcción y ejecución: la etapa *builder* crea el entorno virtual
+y los estáticos, la etapa *final* produce una imagen sin privilegios con
+`entrypoint.sh` y Gunicorn, y la aplicacion se conecta por TLS a MongoDB Atlas.*
+
+| Pieza | Detalle |
+|---|---|
+| Imagen base | `python:3.12-slim` (etapas `builder` y `final`) |
+| Usuario | `appuser` (uid 10001, shell `nologin`, sin privilegios) |
+| Entrada | `entrypoint.sh`: espera a MongoDB, `collectstatic`, `migrate`, `exec "$@"` |
+| Servidor | Gunicorn (`--bind 0.0.0.0:8000`, 3 workers en dev, 2 en prod) |
+| Estaticos | WhiteNoise con `CompressedManifestStaticFilesStorage` |
+| Base de datos | MongoDB Atlas mediante `MONGO_URI` (TLS) |
 
 > El contenedor `mongo` (imagen `mongo:7`) sigue existiendo en los archivos Compose, pero bajo el perfil opcional `mongo-local`: no se levanta por defecto y solo se usa para pruebas aisladas.
 
@@ -376,40 +283,21 @@ Navegador
 
 ### 4.5 Diagrama de despliegue con Docker
 
-```
-                          Internet / Intranet
-                                    |
-                          :8000 (host)
-                                    |
-        +---------------------------+----------------------------+
-        |                    RED DOCKER                            |
-        |                                                            |
-        |   +-------------------------+                            |
-        |   |  servicio: web          |                            |
-        |   |  image: club-motociclistas:dev                       |
-        |   |  container: club-motociclistas-web                   |
-        |   |                         |                            |
-        |   |  gunicorn (3 workers)   |                            |
-        |   |  WhiteNoise             |                            |
-        |   |  EXPOSE 8000            |                            |
-        |   |  healthcheck: /api/esquemas/                        |
-        |   |  volumen: media_data (/app/media)                   |
-        |   +------------+-------------+                            |
-        +----------------|--------------------------------------------+
-                         |
-                         |  MONGO_URI (mongodb+srv://...)
-                         v
-              +---------------------------+
-              |   MongoDB Atlas (externo) |
-              +---------------------------+
-                                    |
-                                    v
-                          usuario (navegador)
-```
+![Topologia de despliegue: navegador, contenedor Docker y MongoDB Atlas](diagramas/11-despliegue.png)
+
+*Figura 5. Topología de despliegue: el navegador accede al puerto 8000 del
+host, el contenedor `club-motociclistas-web` sirve la aplicacion y se conecta
+con MongoDB Atlas a traves de TLS.*
 
 En el archivo de producción (`docker-compose.prod.yml`) el mismo esquema se aplica con `DEBUG=False`, 2 workers de Gunicorn, `restart: unless-stopped` y `SECRET_KEY` obligatoria.
 
 ### 4.6 Árbol de directorios del proyecto
+
+![Estructura de carpetas del proyecto](diagramas/08-estructura-proyecto.png)
+
+*Figura 6. Visión general de la estructura: el paquete de configuración en la
+raíz, las tres apps de dominio, el núcleo auxiliar, las plantillas y los
+estáticos.*
 
 ```text
 club-motociclistas/
@@ -539,6 +427,67 @@ club-motociclistas/
 > **Nota:** el directorio `venv/` (entorno virtual local) y `.git/` no se versionan y se excluyen del árbol por legibilidad.
 
 ---
+
+### 4.7 Capturas de la aplicación en ejecución
+
+Las siguientes capturas corresponden a la aplicación en funcionamiento con los datos
+de prueba cargados (`python manage.py seed_data --flush`) sobre MongoDB Atlas.
+
+![Panel principal del club](capturas/01-home.png)
+
+*Figura 7. Home: resumen con los ocho contadores del club y accesos rápidos.*
+
+![Listado de socios](capturas/02-socios-lista.png)
+
+*Figura 8. Socios → Motociclistas: listado con correo y teléfono de cada socio.*
+
+![Detalle de un socio](capturas/03-socios-detalle.png)
+
+*Figura 9. Ficha de socio: datos personales, documentos y motos registradas.*
+
+![Listado de documentos de socios](capturas/09-documentos-lista.png)
+
+*Figura 10. Socios → Documentos: cédula, licencia, SOAT y tecnomecánica.*
+
+![Formulario de alta de socio](capturas/13-formulario-socio.png)
+
+*Figura 11. Formulario de alta: `ModelForm` con validación por campo.*
+
+![Listado de la flota](capturas/04-flota-lista.png)
+
+*Figura 12. Flota → Motos: listado de motos con placa, marca y dueño.*
+
+![Detalle de una moto](capturas/05-moto-detalle.png)
+
+*Figura 13. Ficha de moto: mantenimientos y accidentes asociados.*
+
+![Listado de mantenimientos](capturas/10-mantenimientos-lista.png)
+
+*Figura 14. Flota → Mantenimientos: historial de intervenciones por moto.*
+
+![Listado de accidentes](capturas/14-accidentes-lista.png)
+
+*Figura 15. Flota → Accidentes: siniestros registrados con su gravedad.*
+
+![Listado de rodadas](capturas/06-eventos-lista.png)
+
+*Figura 16. Eventos → Rodadas: calendario de salidas grupales del club.*
+
+![Detalle de una rodada](capturas/07-rodada-detalle.png)
+
+*Figura 17. Ficha de rodada: control de aforo, inscripciones y fotografías.*
+
+![Listado de inscripciones](capturas/11-inscripciones-lista.png)
+
+*Figura 18. Eventos → Inscripciones: socios inscritos en cada rodada.*
+
+![Listado de la galería](capturas/12-galeria-lista.png)
+
+*Figura 19. Eventos → Galería: fotografías por rodada con su autor.*
+
+![Índice de la API JSON](capturas/08-api-indice.png)
+
+*Figura 20. API interna: índice de colecciones, documentos y esquemas.*
 
 ## 5. Modelo de datos
 
@@ -691,70 +640,23 @@ club-motociclistas/
 
 ### 5.10 Diagrama de relaciones entre colecciones
 
-```
-+---------------------------+
-|   socios_motociclista     |
-|  (Motociclista)           |
-|  PK: ObjectId             |
-+---+-------+-------+-------+
-    |       |       |
-    | 1..N  | 1..N  | 1..N
-    |       |       |
-    v       |       |
-+----------+---+   |   +---------------------+
-|socios_docu-|   |   | eventos_inscripcion  |
-|mentosocio  |   |   | PK: ObjectId         |
-|(Documento   |   |   | idMotociclista (idx) |
-| Socio)      |   |   | idRodada      (idx)  |
-| idMotociclis|   |   | fechaInscripcion     |
-|  ta (idx)   |   |   | asistio              |
-+--------------+   |   | observaciones        |
-                   |   +----------+----------+
-                   |              |
-                   |              | N..1
-                   |              v
-                   |      +-------------------+
-                   |      |  eventos_rodada   |
-                   |      |  (Rodada)         |
-                   |      |  PK: ObjectId     |
-                   |      +---------+---------+
-                   |                |
-                   |                | 1..N
-                   |                v
-                   |      +-------------------+
-                   |      |  eventos_galeria  |
-                   |      |  (Galeria)        |
-                   |      |  idRodada (idx)   |
-                   |      +-------------------+
-                   |
-                   |  1..N
-                   v
-        +----------------------+
-        |     flota_moto       |
-        |  (Moto)             |
-        |  PK: ObjectId       |
-        |  placa (unique)     |
-        |  idMotociclista(idx)|
-        +----------+-----------+
-                   |
-        +----------+-----------+
-        |                      |
-        | 1..N                 | 1..N
-        v                      v
-+-------------------+  +-------------------+
-| flota_mantenimiento| |  flota_accidente  |
-| (Mantenimiento)    | |  (Accidente)      |
-| idMoto (idx)       | |  idMoto (idx)     |
-| fecha · tipo       | |  fecha · gravedad |
-| descripcion        | |  ubicacion        |
-| costo · kilometraje| |  costoEstimado    |
-| realizado          | |                   |
-+-------------------+  +-------------------+
+![Relaciones entre las ocho colecciones de MongoDB](diagramas/04-modelo-datos.png)
 
-Leyenda: las flechas representan referencias logicas resueltas por
-`club_motociclistas/referencias.py`. NO existen joins ni claves foraneas en
-MongoDB: cada flecha es un `CharField` de 24 caracteres con el ObjectId.
-```
+*Figura 7. Relaciones entre colecciones. Cada socio referencia sus documentos
+y motos; cada moto, sus mantenimientos y accidentes; cada rodada, sus
+inscripciones y fotografías. Las referencias se guardan como `ObjectId` en
+texto, no como `ForeignKey`.*
+
+| Coleccion | Documentos | Referencia a |
+|---|---|---|
+| `socios_motociclista` | Socio | — |
+| `socios_documentosocio` | Documento (cédula, licencia, SOAT, tecnomecánica) | `socios_motociclista` |
+| `flota_moto` | Moto | `socios_motociclista` |
+| `flota_mantenimiento` | Intervencion sobre una moto | `flota_moto` |
+| `flota_accidente` | Siniestro de una moto | `flota_moto`, `socios_motociclista` |
+| `eventos_rodada` | Salida grupal | — |
+| `eventos_inscripcion` | Inscripcion de un socio a una rodada | `eventos_rodada`, `socios_motociclista` |
+| `eventos_galeria` | Fotografía de una rodada | `eventos_rodada` |
 
 **Resumen de cardinalidades:**
 
@@ -832,6 +734,12 @@ Definiciones comunes en `schemas/base.schema.json` (`$defs`): `objectId`, `fecha
 ### 6.3 Restricciones a nivel de base de datos
 
 Los archivos `schemas/*.json` definen, con JSON Schema 2020-12, las reglas 1 a 24 (rangos de `anio`, `cilindrada`, `cupoMaximo`, `distanciaKm`, `minimum` en costos y kilometrajes, `enum` de `gravedad` y `estado`, campos `required`, etc.). El comando `python manage.py validar_esquemas` las aplica a los documentos existentes en MongoDB.
+![Reglas de integridad referencial al eliminar socios, motos y rodadas](diagramas/05-integridad-borrado.png)
+
+*Figura 8. Integridad referencial: los objetos "padre" (socio, moto, rodada y
+documento) bloquean su eliminación si tienen dependientes; los hijos
+(mantenimientos, accidentes, inscripciones y fotografías) se borran sin
+restriccion.*
 
 > **Nota:** los esquemas corresponden a las colecciones que usa el ORM (§5.1). Para replicar estas restricciones **en el servidor** con validadores `$jsonSchema` hay que alinear los nombres de colección o generar y aplicar las migraciones de Django, que crean los índices únicos (`correo`, `placa`) en las colecciones reales.
 

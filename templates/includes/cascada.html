@@ -1,0 +1,44 @@
+{% comment %}
+Advertencia de eliminacion en cascada.
+Contexto: plan (club_motociclistas.cascada.Plan).
+Uso: {% include "includes/cascada.html" with plan=plan %}
+{% endcomment %}
+{% for advertencia in plan.advertencias %}
+<div class="aviso aviso--warning mb-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></svg>
+    <span>{{ advertencia }}</span>
+</div>
+{% endfor %}
+
+{% if plan.total %}
+<div class="aviso aviso--error mb-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path><path d="M12 9v4M12 17h.01"></path></svg>
+    <span>
+        <strong>Atencion:</strong> al continuar se eliminara este registro y
+        {{ plan.total }} registro{% if plan.total != 1 %}s{% endif %} asociado{% if plan.total != 1 %}s{% endif %}
+        en cascada ({{ plan.resumen }}). La accion es permanente y no se puede deshacer.
+    </span>
+</div>
+
+<ul class="cascada mb-4">
+    {% for grupo in plan.grupos %}
+        {% if grupo.elementos %}
+        <li class="cascada__grupo">
+            <span class="cascada__titulo">
+                {{ grupo.cantidad }} {{ grupo.etiqueta }}{% if grupo.detalle %}<span class="cascada__detalle">{{ grupo.detalle }}</span>{% endif %}
+            </span>
+            <ul class="cascada__elementos">
+                {% for linea in grupo.lineas %}
+                <li>{{ linea }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+{% else %}
+<div class="aviso aviso--info mb-4">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+    <span>No hay registros asociados: solo se eliminara este registro.</span>
+</div>
+{% endif %}
